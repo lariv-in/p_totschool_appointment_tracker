@@ -124,15 +124,10 @@ UIRegistry.register("appointments.AppointmentFilter")(
         method="get",
         swap="morph",
         children=[
-            ComponentRegistry.get("datetime_input")(
-                uid="appointment-filter-start-date",
-                key="start_date",
-                label="Start Date",
-            ),
-            ComponentRegistry.get("datetime_input")(
-                uid="appointment-filter-end-date",
-                key="end_date",
-                label="End Date",
+            ComponentRegistry.get("date_input")(
+                uid="appointment-filter-date",
+                key="date",
+                label="Date",
             ),
             ComponentRegistry.get("text_input")(
                 uid="appointment-filter-name",
@@ -156,7 +151,7 @@ UIRegistry.register("appointments.AppointmentFilter")(
             ComponentRegistry.get("checkbox_input")(
                 uid="appointment-filter-overlapping",
                 key="overlapping",
-                label="Show only overlapping appointments",
+                label="Overlaps",
             ),
             ComponentRegistry.get("row")(
                 uid="appointment-filter-actions",

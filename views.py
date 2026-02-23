@@ -125,6 +125,13 @@ class AppointmentList(ListViewMixin):
         ):
             queryset = queryset.filter(created_by=self.request.user)
 
+        date_value = get_params.pop("date", None)
+        if date_value:
+            from django.db.models import Q
+            queryset = queryset.filter(
+                Q(start__date=date_value) | Q(end__date=date_value)
+            )
+
         page_number = get_params.pop("page", 1)
         sort = get_params.pop("sort", None)
         if sort is not None:
