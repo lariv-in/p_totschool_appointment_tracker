@@ -69,11 +69,6 @@ UIRegistry.register("appointments.AppointmentMenu")(
         ),
         children=[
             ComponentRegistry.get("menu_item")(
-                uid="appointment-menu-timeline",
-                title="Timeline",
-                url=reverse_lazy("appointments:timeline"),
-            ),
-            ComponentRegistry.get("menu_item")(
                 uid="appointment-menu-list",
                 title="All Appointments",
                 url=reverse_lazy("appointments:default"),
