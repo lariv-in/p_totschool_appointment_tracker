@@ -16,96 +16,6 @@ from lariv.registry import ViewRegistry
 from .models import Appointment
 
 
-class OverlapWarningMixin:
-    """Mixin to handle overlap warnings for appointments."""
-
-    def check_overlaps(self, obj):
-        """Check for overlapping appointments and return them."""
-        return obj.get_overlapping_appointments()
-
-    def post(self, request, *args, **kwargs):
-        from types import SimpleNamespace
-        from components.forms import ManyToManyInput
-
-        pk = kwargs.get("pk")
-        instance = self.get_object(pk)
-        inputs = self.get_inputs()
-
-        # Get form data
-        data = {}
-        m2m_data = {}
-        for input_comp in inputs:
-            field = input_comp.key
-            if input_comp.is_instance_of(ManyToManyInput):
-                values = request.POST.getlist(f"{input_comp.uid}_values")
-                m2m_data[field] = values
-                data[field] = values
-            else:
-                value = request.POST.get(field)
-                data[field] = value
-
-        # Validate
-        cleaned_data, errors = self.validate(data, inputs, instance)
-
-        if errors:
-            return self._render_form_errors(request, kwargs, errors, data, instance)
-
-        # Separate M2M fields
-        m2m_cleaned = {}
-        regular_cleaned = {}
-        for field, value in cleaned_data.items():
-            if field in m2m_data:
-                m2m_cleaned[field] = value
-            else:
-                regular_cleaned[field] = value
-
-        # Create a temporary object to check overlaps
-        temp_obj = Appointment(pk=pk, **regular_cleaned)
-
-        # Check for overlaps
-        overlapping = self.check_overlaps(temp_obj)
-        confirm_overlap = request.POST.get("confirm_overlap") == "true"
-
-        if overlapping.exists() and not confirm_overlap:
-            # Show warning with overlapping appointments
-            prepared_data = self.prepare_data(request, **kwargs)
-            prepared_data["overlapping_appointments"] = overlapping
-            prepared_data["show_overlap_warning"] = True
-
-            # Preserve form data
-            prepared_data[self.get_key()] = instance
-
-            return self.render_component(request, **prepared_data)
-
-        # Proceed with save
-        try:
-            if instance:
-                for field, value in regular_cleaned.items():
-                    setattr(instance, field, value)
-                instance.save()
-                obj = instance
-            else:
-                obj = self.model.objects.create(**regular_cleaned)
-
-            for field, values in m2m_cleaned.items():
-                getattr(obj, field).set(values)
-
-        except ValidationError as e:
-            if hasattr(e, "message_dict"):
-                for field, msg_list in e.message_dict.items():
-                    errors[field] = ", ".join(msg_list)
-            else:
-                errors["Error"] = str(e)
-            return self._render_form_errors(request, kwargs, errors, data, instance)
-        except Exception as e:
-            errors["Error"] = str(e)
-            return self._render_form_errors(request, kwargs, errors, data, instance)
-
-        success_url = self.get_success_url(obj)
-        if request.htmx:
-            return HttpResponse(status=200, headers={"HX-Redirect": success_url})
-        return redirect(success_url)
-
 
 @ViewRegistry.register("appointments.AppointmentList")
 class AppointmentList(ListViewMixin):
@@ -174,7 +84,7 @@ class AppointmentView(DetailViewMixin):
 
 
 @ViewRegistry.register("appointments.AppointmentCreate")
-class AppointmentCreate(OverlapWarningMixin, PostFormViewMixin):
+class AppointmentCreate(PostFormViewMixin):
     model = Appointment
     component = "appointments.AppointmentCreateForm"
     key = "appointment"
@@ -190,7 +100,7 @@ class AppointmentCreate(OverlapWarningMixin, PostFormViewMixin):
 
 
 @ViewRegistry.register("appointments.AppointmentUpdate")
-class AppointmentUpdate(OverlapWarningMixin, PostFormViewMixin):
+class AppointmentUpdate(PostFormViewMixin):
     model = Appointment
     component = "appointments.AppointmentUpdateForm"
     key = "appointment"
