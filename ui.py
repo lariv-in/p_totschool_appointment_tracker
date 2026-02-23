@@ -71,6 +71,11 @@ UIRegistry.register("appointments.AppointmentFilter")(
         method="get",
         swap="morph",
         children=[
+            ComponentRegistry.get("date_input")(
+                uid="appointment-filter-date",
+                key="date",
+                label="Date",
+            ),
             ComponentRegistry.get("text_input")(
                 uid="appointment-filter-name",
                 key="name",
@@ -415,6 +420,22 @@ UIRegistry.register("appointments.AppointmentTimeline")(
                 subtitle="Schedule of all appointments over time",
                 filter_component=UIRegistry.get("appointments.AppointmentFilter"),
                 options={
+                    "chart": {
+                        "zoom": {
+                            "enabled": True,
+                            "type": "x",
+                        },
+                        "toolbar": {
+                            "show": True,
+                            "tools": {
+                                "zoom": True,
+                                "zoomin": True,
+                                "zoomout": True,
+                                "pan": True,
+                                "reset": True,
+                            },
+                        },
+                    },
                     "plotOptions": {
                         "bar": {
                             "horizontal": True

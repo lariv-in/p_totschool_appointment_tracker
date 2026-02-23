@@ -69,10 +69,34 @@ class AppointmentTimeline(ChartViewMixin):
     key = "appointments"
 
     def get_chart_data(self, request, **kwargs):
+        from django.utils import timezone
+        from datetime import datetime
+
         queryset = self.get_queryset()
-        
+
         # Apply filters just like ListViewMixin does
         get_params = request.GET.dict()
+
+        # Handle range-based filtering (from chart zoom/pan)
+        range_min = get_params.pop("range_min", None)
+        range_max = get_params.pop("range_max", None)
+
+        if range_min and range_max:
+            # Parse ISO format datetime strings
+            try:
+                min_dt = datetime.fromisoformat(range_min.replace("Z", "+00:00"))
+                max_dt = datetime.fromisoformat(range_max.replace("Z", "+00:00"))
+                queryset = queryset.filter(start__gte=min_dt, start__lte=max_dt)
+            except ValueError:
+                pass
+        else:
+            # Default to today if no date/range filter provided
+            date_filter = get_params.pop("date", None)
+            if date_filter:
+                queryset = queryset.filter(start__date=date_filter)
+            elif "date" not in request.GET:
+                queryset = queryset.filter(start__date=timezone.localdate())
+
         queryset = apply_filters(queryset, get_params, self.model)
         
         # Order by start time

@@ -9,4 +9,4 @@ class TotschoolAppointmentTrackerConfig(AppConfig):
     icon = "calendar"
 
     def ready(self):
-        from . import ui  # noqa: F401
+        from . import ui, generator  # noqa: F401
