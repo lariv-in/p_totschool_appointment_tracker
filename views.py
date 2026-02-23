@@ -1,4 +1,5 @@
 from django.urls import reverse, reverse_lazy
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.core.exceptions import ValidationError
@@ -118,6 +119,11 @@ class AppointmentList(ListViewMixin):
 
         queryset = self.get_queryset()
         get_params = request.GET.dict()
+        if not (
+            self.request.user.is_superuser
+            or self.request.user.role in ["totschool_admin"]
+        ):
+            queryset = queryset.filter(created_by=self.request.user)
 
         page_number = get_params.pop("page", 1)
         sort = get_params.pop("sort", None)
@@ -166,6 +172,12 @@ class AppointmentCreate(OverlapWarningMixin, PostFormViewMixin):
     component = "appointments.AppointmentCreateForm"
     key = "appointment"
 
+    def validate(self, data, inputs, instance=None):
+        cleaned_data, errors = super().validate(data, inputs, instance)
+        cleaned_data["user_id"] = self.request.user.id
+
+        return cleaned_data, errors
+
     def get_success_url(self, obj):
         return reverse("appointments:detail", kwargs={"pk": obj.pk})
 
@@ -175,6 +187,15 @@ class AppointmentUpdate(OverlapWarningMixin, PostFormViewMixin):
     model = Appointment
     component = "appointments.AppointmentUpdateForm"
     key = "appointment"
+
+    def validate(self, data, inputs, instance=None):
+        if not (self.request.user.is_superuser or instance.created_by is not self.request.user):
+            raise PermissionDenied("You cannot perform this action")
+
+        data["created_by"] = self.request.user.id
+        cleaned_data, errors = super().validate(data, inputs, instance)
+
+        return cleaned_data, errors
 
     def get_success_url(self, obj):
         return reverse("appointments:detail", kwargs={"pk": obj.pk})
@@ -186,6 +207,11 @@ class AppointmentDelete(DeleteViewMixin):
     component = "appointments.AppointmentDeleteForm"
     key = "appointment"
     success_url = reverse_lazy("appointments:default")
+
+    def get_queryset(self):
+        if not (self.request.user.is_superuser or self.request.user.role in ["totschool_admin"]):
+            super().get_queryset().filter(created_by=self.request.user)
+        super().get_queryset()
 
 
 @ViewRegistry.register("appointments.AppointmentSelectionTable")
@@ -207,6 +233,7 @@ class AppointmentTimeline(ChartViewMixin):
 
         queryset = self.get_queryset()
 
+
         # Apply filters just like ListViewMixin does
         get_params = request.GET.dict()
 
@@ -219,6 +246,13 @@ class AppointmentTimeline(ChartViewMixin):
 
         # Check if any filters are provided
         has_filters = bool(range_min and range_max) or bool(created_by_values) or any(v for v in get_params.values())
+
+        if not (
+            self.request.user.is_superuser
+            or self.request.user.role in ["totschool_admin"]
+        ):
+            queryset = queryset.filter(created_by=self.request.user)
+            has_filters = True
 
         if not has_filters:
             return {

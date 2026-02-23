@@ -1,3 +1,4 @@
+from typing import List
 from django.urls import reverse_lazy, reverse
 from lariv.registry import UIRegistry, ComponentRegistry
 from components.base import Component
@@ -7,8 +8,10 @@ from users.models import User
 class OverlapWarning(Component):
     """Shows a warning when appointments overlap, with optional confirmation checkbox."""
 
-    def __init__(self, uid: str = "", classes: str = "", show_confirmation: bool = True):
-        super().__init__(classes, uid)
+    def __init__(
+        self, uid: str = "", classes: str = "", show_confirmation: bool = True, role: List[str] = []
+    ):
+        super().__init__(classes, uid, role)
         self.show_confirmation = show_confirmation
 
     def render_html(self, **kwargs) -> str:
@@ -21,7 +24,7 @@ class OverlapWarning(Component):
 
         items_html = "".join(
             f'<li><a href="{appt.get_absolute_url()}" class="link">{appt.name}</a> '
-            f'({appt.start.strftime("%b %d %H:%M")} - {appt.end.strftime("%H:%M")})</li>'
+            f"({appt.start.strftime('%b %d %H:%M')} - {appt.end.strftime('%H:%M')})</li>"
             for appt in overlapping
         )
 
@@ -231,6 +234,7 @@ UIRegistry.register("appointments.AppointmentFormFields")(
                 label="Created By",
                 selection_url=reverse_lazy("users:select"),
                 display_attr="name",
+                role=["totschool_admin"],
                 placeholder="Select a user...",
                 required=True,
             ),
@@ -324,6 +328,7 @@ UIRegistry.register("appointments.AppointmentTable")(
                         uid="appointment-col-created-by",
                         label="Created By",
                         key="created_by",
+                        role=["totschool_admin"],
                         component=ComponentRegistry.get("text_field")(
                             uid="appointment-col-created-by-field",
                             key="created_by",
@@ -504,20 +509,10 @@ UIRegistry.register("appointments.AppointmentTimeline")(
                             },
                         },
                     },
-                    "plotOptions": {
-                        "bar": {
-                            "horizontal": True
-                        }
-                    },
-                    "xaxis": {
-                        "type": "datetime"
-                    },
-                    "tooltip": {
-                        "x": {
-                            "format": "dd MMM yyyy HH:mm"
-                        }
-                    },
-                }
+                    "plotOptions": {"bar": {"horizontal": True}},
+                    "xaxis": {"type": "datetime"},
+                    "tooltip": {"x": {"format": "dd MMM yyyy HH:mm"}},
+                },
             )
         ],
     )
