@@ -9,7 +9,11 @@ class OverlapWarning(Component):
     """Shows a warning when appointments overlap, with optional confirmation checkbox."""
 
     def __init__(
-        self, uid: str = "", classes: str = "", show_confirmation: bool = True, role: List[str] = []
+        self,
+        uid: str = "",
+        classes: str = "",
+        show_confirmation: bool = True,
+        role: List[str] = [],
     ):
         super().__init__(classes, uid, role)
         self.show_confirmation = show_confirmation
@@ -278,6 +282,10 @@ UIRegistry.register("appointments.AppointmentTable")(
                 classes="w-full",
                 key="appointments",
                 title="Appointments",
+                displays={
+                    "Grid": ComponentRegistry.get("table_grid"),
+                    "List": ComponentRegistry.get("table_list"),
+                },
                 subtitle="List of appointments",
                 create_url=reverse_lazy("appointments:create"),
                 row_url=lambda o: reverse("appointments:detail", args=[o.pk]),
