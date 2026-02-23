@@ -120,12 +120,12 @@ UIRegistry.register("appointments.AppointmentFilter")(
         method="get",
         swap="morph",
         children=[
-            ComponentRegistry.get("date_input")(
+            ComponentRegistry.get("datetime_input")(
                 uid="appointment-filter-start-date",
                 key="start_date",
                 label="Start Date",
             ),
-            ComponentRegistry.get("date_input")(
+            ComponentRegistry.get("datetime_input")(
                 uid="appointment-filter-end-date",
                 key="end_date",
                 label="End Date",
@@ -305,7 +305,7 @@ UIRegistry.register("appointments.AppointmentTable")(
                         uid="appointment-col-start",
                         label="Start",
                         key="start",
-                        component=ComponentRegistry.get("date_field")(
+                        component=ComponentRegistry.get("datetime_field")(
                             uid="appointment-col-start-field",
                             key="start",
                         ),
@@ -314,7 +314,7 @@ UIRegistry.register("appointments.AppointmentTable")(
                         uid="appointment-col-end",
                         label="End",
                         key="end",
-                        component=ComponentRegistry.get("date_field")(
+                        component=ComponentRegistry.get("datetime_field")(
                             uid="appointment-col-end-field",
                             key="end",
                         ),
@@ -363,7 +363,7 @@ UIRegistry.register("appointments.AppointmentDetail")(
                                 uid="appointment-detail-start-label",
                                 title="Start",
                                 classes="mt-2",
-                                component=ComponentRegistry.get("date_field")(
+                                component=ComponentRegistry.get("datetime_field")(
                                     uid="appointment-detail-start-field",
                                     key="start",
                                 ),
@@ -371,7 +371,7 @@ UIRegistry.register("appointments.AppointmentDetail")(
                             ComponentRegistry.get("inline_label")(
                                 uid="appointment-detail-end-label",
                                 title="End",
-                                component=ComponentRegistry.get("date_field")(
+                                component=ComponentRegistry.get("datetime_field")(
                                     uid="appointment-detail-end-field",
                                     key="end",
                                 ),
@@ -451,7 +451,7 @@ UIRegistry.register("appointments.AppointmentSelectionTable")(
                         uid="appointment-sel-col-start",
                         label="Start",
                         key="start",
-                        component=ComponentRegistry.get("date_field")(
+                        component=ComponentRegistry.get("datetime_field")(
                             uid="appointment-sel-start-field",
                             key="start",
                         ),
@@ -460,7 +460,7 @@ UIRegistry.register("appointments.AppointmentSelectionTable")(
                         uid="appointment-sel-col-end",
                         label="End",
                         key="end",
-                        component=ComponentRegistry.get("date_field")(
+                        component=ComponentRegistry.get("datetime_field")(
                             uid="appointment-sel-end-field",
                             key="end",
                         ),
