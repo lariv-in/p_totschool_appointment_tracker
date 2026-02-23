@@ -210,8 +210,8 @@ class AppointmentDelete(DeleteViewMixin):
 
     def get_queryset(self):
         if not (self.request.user.is_superuser or self.request.user.role in ["totschool_admin"]):
-            super().get_queryset().filter(created_by=self.request.user)
-        super().get_queryset()
+            return super().get_queryset().filter(created_by=self.request.user)
+        return super().get_queryset()
 
 
 @ViewRegistry.register("appointments.AppointmentSelectionTable")
