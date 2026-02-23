@@ -27,17 +27,19 @@ class Appointment(models.Model):
         if isinstance(self.start, datetime) and isinstance(self.end, datetime) and self.end <= self.start:
             raise ValidationError({"end": "End time must be after start time."})
 
-        # Check overlaps for same user
-        overlapping = Appointment.objects.filter(
+    def get_overlapping_appointments(self):
+        """Return appointments that overlap with this one for the same user."""
+        if not self.created_by or not self.start or not self.end:
+            return Appointment.objects.none()
+        return Appointment.objects.filter(
             created_by=self.created_by,
             start__lt=self.end,
             end__gt=self.start,
         ).exclude(pk=self.pk)
 
-        if overlapping.exists():
-            raise ValidationError(
-                {"start": "Overlaps with an existing appointment."}
-            )
+    def has_overlaps(self):
+        """Check if this appointment overlaps with any other."""
+        return self.get_overlapping_appointments().exists()
 
     class Meta:
         ordering = ["-start"]

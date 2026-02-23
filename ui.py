@@ -1,6 +1,57 @@
 from django.urls import reverse_lazy, reverse
 from lariv.registry import UIRegistry, ComponentRegistry
+from components.base import Component
 from users.models import User
+
+
+class OverlapWarning(Component):
+    """Shows a warning when appointments overlap, with optional confirmation checkbox."""
+
+    def __init__(self, uid: str = "", classes: str = "", show_confirmation: bool = True):
+        super().__init__(classes, uid)
+        self.show_confirmation = show_confirmation
+
+    def render_html(self, **kwargs) -> str:
+        if not kwargs.get("show_overlap_warning"):
+            return ""
+
+        overlapping = kwargs.get("overlapping_appointments", [])
+        if not overlapping:
+            return ""
+
+        items_html = "".join(
+            f'<li><a href="{appt.get_absolute_url()}" class="link">{appt.name}</a> '
+            f'({appt.start.strftime("%b %d %H:%M")} - {appt.end.strftime("%H:%M")})</li>'
+            for appt in overlapping
+        )
+
+        confirmation_html = ""
+        if self.show_confirmation:
+            confirmation_html = """
+            <div class="flex items-center gap-2 mt-2">
+                <input type="checkbox" name="confirm_overlap" value="true" class="checkbox checkbox-sm" id="confirm-overlap-checkbox" />
+                <label for="confirm-overlap-checkbox" class="text-sm">I understand and want to save anyway</label>
+            </div>
+            """
+
+        return f"""
+        <div id="{self.uid}" class="alert alert-warning my-4">
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div>
+                    <h3 class="font-bold">Overlapping Appointments</h3>
+                    <p class="text-sm">This appointment overlaps with:</p>
+                    <ul class="list-disc list-inside text-sm mt-1">{items_html}</ul>
+                </div>
+            </div>
+            {confirmation_html}
+        </div>
+        """
+
+
+ComponentRegistry.register("overlap_warning")(OverlapWarning)
 
 
 # Menus
@@ -72,9 +123,14 @@ UIRegistry.register("appointments.AppointmentFilter")(
         swap="morph",
         children=[
             ComponentRegistry.get("date_input")(
-                uid="appointment-filter-date",
-                key="date",
-                label="Date",
+                uid="appointment-filter-start-date",
+                key="start_date",
+                label="Start Date",
+            ),
+            ComponentRegistry.get("date_input")(
+                uid="appointment-filter-end-date",
+                key="end_date",
+                label="End Date",
             ),
             ComponentRegistry.get("text_input")(
                 uid="appointment-filter-name",
@@ -86,14 +142,19 @@ UIRegistry.register("appointments.AppointmentFilter")(
                 key="location",
                 label="Location",
             ),
-            ComponentRegistry.get("foreign_key_input")(
+            ComponentRegistry.get("many_to_many_input")(
                 uid="appointment-filter-created-by",
                 key="created_by",
                 model=User,
                 label="Created By",
-                selection_url=reverse_lazy("users:select"),
+                selection_url=reverse_lazy("users:multi_select"),
                 display_attr="name",
-                placeholder="Select a user...",
+                placeholder="Select users...",
+            ),
+            ComponentRegistry.get("checkbox_input")(
+                uid="appointment-filter-overlapping",
+                key="overlapping",
+                label="Show only overlapping appointments",
             ),
             ComponentRegistry.get("row")(
                 uid="appointment-filter-actions",
@@ -172,6 +233,9 @@ UIRegistry.register("appointments.AppointmentFormFields")(
                 display_attr="name",
                 placeholder="Select a user...",
                 required=True,
+            ),
+            ComponentRegistry.get("overlap_warning")(
+                uid="appointment-form-overlap-warning",
             ),
             ComponentRegistry.get("submit_input")(
                 uid="appointment-form-submit",
@@ -319,6 +383,10 @@ UIRegistry.register("appointments.AppointmentDetail")(
                                     uid="appointment-detail-created-by-field",
                                     key="created_by",
                                 ),
+                            ),
+                            ComponentRegistry.get("overlap_warning")(
+                                uid="appointment-detail-overlap-warning",
+                                show_confirmation=False,
                             ),
                         ],
                     ),
