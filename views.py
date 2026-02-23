@@ -173,8 +173,8 @@ class AppointmentCreate(OverlapWarningMixin, PostFormViewMixin):
     key = "appointment"
 
     def validate(self, data, inputs, instance=None):
+        data["created_by"] = self.request.user.id
         cleaned_data, errors = super().validate(data, inputs, instance)
-        cleaned_data["user_id"] = self.request.user.id
 
         return cleaned_data, errors
 
