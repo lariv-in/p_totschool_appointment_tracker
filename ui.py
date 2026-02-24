@@ -215,7 +215,7 @@ UIRegistry.register("appointments.AppointmentFormFields")(
                         uid="appointment-form-phone",
                         key="phone",
                         label="Phone",
-                        required=False,
+                        required=True,
                     ),
                     ComponentRegistry.get("datetime_input")(
                         uid="appointment-form-datetime",
@@ -362,6 +362,15 @@ UIRegistry.register("appointments.AppointmentTable")(
                             role=["totschool_admin"],
                         ),
                     ),
+                    ComponentRegistry.get("table_column")(
+                        uid="appointment-col-created-at",
+                        label="Created At",
+                        key="created_at",
+                        component=ComponentRegistry.get("datetime_field")(
+                            uid="appointment-col-created-at-field",
+                            key="created_at",
+                        ),
+                    ),
                 ],
             )
         ],
@@ -424,8 +433,17 @@ UIRegistry.register("appointments.AppointmentDetail")(
                                 uid="appointment-detail-remarks",
                                 title="Remarks",
                                 component=ComponentRegistry.get("text_field")(
-                                    uid="appointment-detail-remarks",
+                                    uid="appointment-detail-remarks-field",
                                     key="remarks",
+                                ),
+                            ),
+                            ComponentRegistry.get("inline_label")(
+                                uid="appointment-detail-created-at-label",
+                                title="Created At",
+                                classes="mt-2",
+                                component=ComponentRegistry.get("datetime_field")(
+                                    uid="appointment-detail-created-at-field",
+                                    key="created_at",
                                 ),
                             ),
                             ComponentRegistry.get("overlap_warning")(
@@ -507,6 +525,15 @@ UIRegistry.register("appointments.AppointmentSelectionTable")(
                         component=ComponentRegistry.get("datetime_field")(
                             uid="appointment-sel-datetime-field",
                             key="datetime",
+                        ),
+                    ),
+                    ComponentRegistry.get("table_column")(
+                        uid="appointment-sel-col-created-at",
+                        label="Created At",
+                        key="created_at",
+                        component=ComponentRegistry.get("datetime_field")(
+                            uid="appointment-sel-created-at-field",
+                            key="created_at",
                         ),
                     ),
                 ],

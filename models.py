@@ -18,6 +18,7 @@ class Appointment(models.Model):
     datetime = models.DateTimeField()
     phone = PhoneNumberField(blank=True, null=True)
     remarks = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
