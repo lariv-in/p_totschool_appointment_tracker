@@ -29,12 +29,11 @@ class OverlapWarning(Component):
 
         items_html = ""
         for appt in overlapping:
-            start_dt = timezone.localtime(appt.start)
-            end_dt = timezone.localtime(appt.end)
+            dt = timezone.localtime(appt.datetime)
 
             items_html += (
                 f'<li><a href="{appt.get_absolute_url()}" class="link">{appt.name}</a> '
-                f"({start_dt.strftime('%b %d %H:%M')} - {end_dt.strftime('%H:%M')})</li>"
+                f"({dt.strftime('%b %d %H:%M')})</li>"
             )
 
         confirmation_html = ""
@@ -208,26 +207,20 @@ UIRegistry.register("appointments.AppointmentFormFields")(
                     ),
                 ],
             ),
-            ComponentRegistry.get("phone_input")(
-                uid="appointment-form-phone",
-                key="phone",
-                label="Phone",
-                required=False,
-            ),
             ComponentRegistry.get("row")(
                 uid="appointment-form-row-2",
                 classes="grid grid-cols-1 gap-1 @md:grid-cols-2",
                 children=[
-                    ComponentRegistry.get("datetime_input")(
-                        uid="appointment-form-start",
-                        key="start",
-                        label="Start",
-                        required=True,
+                    ComponentRegistry.get("phone_input")(
+                        uid="appointment-form-phone",
+                        key="phone",
+                        label="Phone",
+                        required=False,
                     ),
                     ComponentRegistry.get("datetime_input")(
-                        uid="appointment-form-end",
-                        key="end",
-                        label="End",
+                        uid="appointment-form-datetime",
+                        key="datetime",
+                        label="Date & Time",
                         required=True,
                     ),
                 ],
@@ -350,21 +343,12 @@ UIRegistry.register("appointments.AppointmentTable")(
                         ),
                     ),
                     ComponentRegistry.get("table_column")(
-                        uid="appointment-col-start",
-                        label="Start",
-                        key="start",
+                        uid="appointment-col-datetime",
+                        label="Date & Time",
+                        key="datetime",
                         component=ComponentRegistry.get("datetime_field")(
-                            uid="appointment-col-start-field",
-                            key="start",
-                        ),
-                    ),
-                    ComponentRegistry.get("table_column")(
-                        uid="appointment-col-end",
-                        label="End",
-                        key="end",
-                        component=ComponentRegistry.get("datetime_field")(
-                            uid="appointment-col-end-field",
-                            key="end",
+                            uid="appointment-col-datetime-field",
+                            key="datetime",
                         ),
                     ),
                     ComponentRegistry.get("table_column")(
@@ -418,20 +402,12 @@ UIRegistry.register("appointments.AppointmentDetail")(
                                 ),
                             ),
                             ComponentRegistry.get("inline_label")(
-                                uid="appointment-detail-start-label",
-                                title="Start",
+                                uid="appointment-detail-datetime-label",
+                                title="Date & Time",
                                 classes="mt-2",
                                 component=ComponentRegistry.get("datetime_field")(
-                                    uid="appointment-detail-start-field",
-                                    key="start",
-                                ),
-                            ),
-                            ComponentRegistry.get("inline_label")(
-                                uid="appointment-detail-end-label",
-                                title="End",
-                                component=ComponentRegistry.get("datetime_field")(
-                                    uid="appointment-detail-end-field",
-                                    key="end",
+                                    uid="appointment-detail-datetime-field",
+                                    key="datetime",
                                 ),
                             ),
                             ComponentRegistry.get("inline_label")(
@@ -525,21 +501,12 @@ UIRegistry.register("appointments.AppointmentSelectionTable")(
                         ),
                     ),
                     ComponentRegistry.get("table_column")(
-                        uid="appointment-sel-col-start",
-                        label="Start",
-                        key="start",
+                        uid="appointment-sel-col-datetime",
+                        label="Date & Time",
+                        key="datetime",
                         component=ComponentRegistry.get("datetime_field")(
-                            uid="appointment-sel-start-field",
-                            key="start",
-                        ),
-                    ),
-                    ComponentRegistry.get("table_column")(
-                        uid="appointment-sel-col-end",
-                        label="End",
-                        key="end",
-                        component=ComponentRegistry.get("datetime_field")(
-                            uid="appointment-sel-end-field",
-                            key="end",
+                            uid="appointment-sel-datetime-field",
+                            key="datetime",
                         ),
                     ),
                 ],
@@ -582,7 +549,9 @@ UIRegistry.register("appointments.AppointmentCardTimeline")(
                 uid="appointment-card-timeline",
                 key="appointments",
                 title="Appointments",
-                filter_component=UIRegistry.get("appointments.AppointmentCardTimelineFilter"),
+                filter_component=UIRegistry.get(
+                    "appointments.AppointmentCardTimelineFilter"
+                ),
                 row_url=lambda o: o.get_absolute_url(),
                 classes="max-h-[80vh]",
                 fields=ComponentRegistry.get("column")(
@@ -602,19 +571,11 @@ UIRegistry.register("appointments.AppointmentCardTimeline")(
                             classes="gap-4 text-sm text-base-content/70",
                             children=[
                                 ComponentRegistry.get("inline_label")(
-                                    uid="appointment-card-start-label",
-                                    title="Start",
+                                    uid="appointment-card-datetime-label",
+                                    title="Date & Time",
                                     component=ComponentRegistry.get("datetime_field")(
-                                        uid="appointment-card-start-field",
-                                        key="start",
-                                    ),
-                                ),
-                                ComponentRegistry.get("inline_label")(
-                                    uid="appointment-card-end-label",
-                                    title="End",
-                                    component=ComponentRegistry.get("datetime_field")(
-                                        uid="appointment-card-end-field",
-                                        key="end",
+                                        uid="appointment-card-datetime-field",
+                                        key="datetime",
                                     ),
                                 ),
                             ],

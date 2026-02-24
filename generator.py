@@ -80,20 +80,16 @@ class AppointmentGenerator(BaseGenerator):
             start_time = current_time + timedelta(days=day_offset)
 
             # Random hour between 8 AM and 5 PM
-            start_time = start_time.replace(
+            dt = start_time.replace(
                 hour=random.randint(8, 16),
                 minute=random.choice([0, 15, 30, 45]),
             )
 
-            # Duration between 30 minutes and 2 hours
-            duration_minutes = random.choice([30, 45, 60, 90, 120])
-            end_time = start_time + timedelta(minutes=duration_minutes)
-
             # Check for overlaps
             overlapping = Appointment.objects.filter(
                 created_by=user,
-                start__lt=end_time,
-                end__gt=start_time,
+                datetime__gt=dt - timedelta(minutes=30),
+                datetime__lt=dt + timedelta(minutes=30),
             ).exists()
 
             if overlapping:
@@ -103,8 +99,7 @@ class AppointmentGenerator(BaseGenerator):
                 created_by=user,
                 name=random.choice(APPOINTMENT_NAMES),
                 location=random.choice(LOCATIONS),
-                start=start_time,
-                end=end_time,
+                datetime=dt,
             )
             created += 1
 

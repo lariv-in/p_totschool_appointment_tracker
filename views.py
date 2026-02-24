@@ -38,9 +38,7 @@ class AppointmentList(ListViewMixin):
         date_value = get_params.pop("date", None)
         if date_value:
             from django.db.models import Q
-            queryset = queryset.filter(
-                Q(start__date=date_value) | Q(end__date=date_value)
-            )
+            queryset = queryset.filter(datetime__date=date_value)
 
         page_number = get_params.pop("page", 1)
         sort = get_params.pop("sort", None)
@@ -50,10 +48,11 @@ class AppointmentList(ListViewMixin):
         # Handle overlapping appointments filter
         show_overlapping = get_params.pop("overlapping", None)
         if show_overlapping in ("true", "True", "1", True):
+            from datetime import timedelta
             overlapping_subquery = Appointment.objects.filter(
                 created_by=OuterRef("created_by"),
-                start__lt=OuterRef("end"),
-                end__gt=OuterRef("start"),
+                datetime__gt=OuterRef("datetime") - timedelta(minutes=30),
+                datetime__lt=OuterRef("datetime") + timedelta(minutes=30),
             ).exclude(pk=OuterRef("pk"))
             queryset = queryset.annotate(
                 has_overlap=Exists(overlapping_subquery)
@@ -165,12 +164,10 @@ class AppointmentCardTimeline(ListViewMixin):
         if not date_value:
             date_value = date.today().isoformat()
 
-        queryset = queryset.filter(
-            Q(start__date=date_value) | Q(end__date=date_value)
-        )
+        queryset = queryset.filter(datetime__date=date_value)
 
         # Order by start time
-        queryset = queryset.order_by("start")
+        queryset = queryset.order_by("datetime")
 
         queryset = apply_filters(queryset, get_params, self.model)
 
@@ -232,7 +229,7 @@ class AppointmentTimeline(ChartViewMixin):
                 min_dt = min_dt - buffer
                 max_dt = max_dt + buffer
 
-                queryset = queryset.filter(start__gte=min_dt, start__lte=max_dt)
+                queryset = queryset.filter(datetime__gte=min_dt, datetime__lte=max_dt)
             except ValueError:
                 pass
 
@@ -241,9 +238,9 @@ class AppointmentTimeline(ChartViewMixin):
         end_date = get_params.pop("end_date", None)
 
         if start_date:
-            queryset = queryset.filter(start__date__gte=start_date)
+            queryset = queryset.filter(datetime__date__gte=start_date)
         if end_date:
-            queryset = queryset.filter(start__date__lte=end_date)
+            queryset = queryset.filter(datetime__date__lte=end_date)
 
         # Handle many-to-many created_by filter (multiple values)
         if created_by_values:
@@ -256,10 +253,11 @@ class AppointmentTimeline(ChartViewMixin):
         if show_overlapping in ("true", "True", "1", True):
             # Get IDs of appointments that have overlaps
             from django.db.models import Exists, OuterRef
+            from datetime import timedelta
             overlapping_subquery = Appointment.objects.filter(
                 created_by=OuterRef("created_by"),
-                start__lt=OuterRef("end"),
-                end__gt=OuterRef("start"),
+                datetime__gt=OuterRef("datetime") - timedelta(minutes=30),
+                datetime__lt=OuterRef("datetime") + timedelta(minutes=30),
             ).exclude(pk=OuterRef("pk"))
             queryset = queryset.annotate(
                 has_overlap=Exists(overlapping_subquery)
@@ -268,16 +266,17 @@ class AppointmentTimeline(ChartViewMixin):
         queryset = apply_filters(queryset, get_params, self.model)
         
         # Order by start time
-        queryset = queryset.order_by("start")
+        queryset = queryset.order_by("datetime")
 
         # ApexCharts Timeline uses { x: "Name", y: [start_timestamp, end_timestamp] }
         data = []
+        from datetime import timedelta
         for appt in queryset:
             data.append({
                 "x": str(appt.created_by) if appt.created_by else "Unknown",
                 "y": [
-                    int(appt.start.timestamp() * 1000), 
-                    int(appt.end.timestamp() * 1000)
+                    int(appt.datetime.timestamp() * 1000), 
+                    int((appt.datetime + timedelta(minutes=30)).timestamp() * 1000)
                 ],
                 "url": reverse("appointments:detail", kwargs={"pk": appt.pk}),
                 "details": {
