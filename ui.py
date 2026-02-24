@@ -74,6 +74,11 @@ UIRegistry.register("appointments.AppointmentMenu")(
                 title="All Appointments",
                 url=reverse_lazy("appointments:default"),
             ),
+            ComponentRegistry.get("menu_item")(
+                uid="appointment-menu-create",
+                title="Create Appointment",
+                url=reverse_lazy("appointments:create"),
+            ),
         ],
     )
 )
@@ -345,6 +350,7 @@ UIRegistry.register("appointments.AppointmentTable")(
                         component=ComponentRegistry.get("text_field")(
                             uid="appointment-col-created-by-field",
                             key="created_by",
+                            role=["totschool_admin"],
                         ),
                     ),
                 ],
@@ -377,9 +383,14 @@ UIRegistry.register("appointments.AppointmentDetail")(
                                 uid="appointment-detail-location",
                                 key="location",
                             ),
-                            ComponentRegistry.get("text_field")(
-                                uid="appointment-detail-phone",
-                                key="phone",
+                            ComponentRegistry.get("inline_label")(
+                                uid="appointment-detail-phone-label",
+                                title="Phone",
+                                classes="mt-2",
+                                component=ComponentRegistry.get("text_field")(
+                                    uid="appointment-detail-phone",
+                                    key="phone",
+                                ),
                             ),
                             ComponentRegistry.get("inline_label")(
                                 uid="appointment-detail-start-label",
