@@ -75,6 +75,11 @@ UIRegistry.register("appointments.AppointmentMenu")(
                 url=reverse_lazy("appointments:default"),
             ),
             ComponentRegistry.get("menu_item")(
+                uid="appointment-menu-cards",
+                title="Appointments Timeline",
+                url=reverse_lazy("appointments:cards"),
+            ),
+            ComponentRegistry.get("menu_item")(
                 uid="appointment-menu-create",
                 title="Create Appointment",
                 url=reverse_lazy("appointments:create"),
@@ -175,18 +180,10 @@ UIRegistry.register("appointments.AppointmentFilter")(
 )
 
 
-# Form (shared between create and update)
+# Form Fields
 UIRegistry.register("appointments.AppointmentFormFields")(
-    ComponentRegistry.get("form")(
-        uid="appointment-form",
-        action=lambda obj: reverse("appointments:update", args=[obj.pk])
-        if obj
-        else reverse("appointments:create"),
-        target="#app-layout",
-        key="appointment",
-        title="Appointment Form",
-        subtitle="Create or edit an appointment",
-        classes="@container",
+    ComponentRegistry.get("column")(
+        uid="appointment-form-fields",
         children=[
             ComponentRegistry.get("row")(
                 uid="appointment-form-row-1",
@@ -261,7 +258,18 @@ UIRegistry.register("appointments.AppointmentCreateForm")(
         sidebar_children=[
             UIRegistry.get("appointments.AppointmentMenu"),
         ],
-        children=[UIRegistry.get("appointments.AppointmentFormFields")],
+        children=[
+            ComponentRegistry.get("form")(
+                uid="appointment-create-form",
+                action=reverse_lazy("appointments:create"),
+                target="#app-layout",
+                key="appointment",
+                title="Create Appointment",
+                subtitle="Create a new appointment",
+                classes="@container",
+                children=[UIRegistry.get("appointments.AppointmentFormFields")],
+            )
+        ],
     )
 )
 
@@ -271,7 +279,18 @@ UIRegistry.register("appointments.AppointmentUpdateForm")(
         sidebar_children=[
             UIRegistry.get("appointments.AppointmentDetailMenu"),
         ],
-        children=[UIRegistry.get("appointments.AppointmentFormFields")],
+        children=[
+            ComponentRegistry.get("form")(
+                uid="appointment-update-form",
+                action=lambda obj: reverse("appointments:update", args=[obj.pk]),
+                target="#app-layout",
+                key="appointment",
+                title="Edit Appointment",
+                subtitle="Update appointment details",
+                classes="@container",
+                children=[UIRegistry.get("appointments.AppointmentFormFields")],
+            )
+        ],
     )
 )
 
@@ -519,6 +538,97 @@ UIRegistry.register("appointments.AppointmentSelectionTable")(
                         ),
                     ),
                 ],
+            ),
+        ],
+    )
+)
+
+
+# Card Timeline Filter
+UIRegistry.register("appointments.AppointmentCardTimelineFilter")(
+    ComponentRegistry.get("form")(
+        uid="appointment-card-timeline-filter",
+        action=reverse_lazy("appointments:cards"),
+        target="#appointment-card-timeline",
+        method="get",
+        swap="outerHTML",
+        hx_trigger="change",
+        classes="flex items-center gap-2",
+        children=[
+            ComponentRegistry.get("date_input")(
+                uid="appointment-card-timeline-filter-date",
+                key="date",
+                label="",
+            ),
+        ],
+    )
+)
+
+
+# Card Timeline (using Timeline component)
+UIRegistry.register("appointments.AppointmentCardTimeline")(
+    ComponentRegistry.get("scaffold")(
+        uid="appointment-card-timeline-scaffold",
+        sidebar_children=[
+            UIRegistry.get("appointments.AppointmentMenu"),
+        ],
+        children=[
+            ComponentRegistry.get("timeline")(
+                uid="appointment-card-timeline",
+                key="appointments",
+                title="Appointments",
+                filter_component=UIRegistry.get("appointments.AppointmentCardTimelineFilter"),
+                row_url=lambda o: o.get_absolute_url(),
+                classes="max-h-[80vh]",
+                fields=ComponentRegistry.get("column")(
+                    uid="appointment-card-fields",
+                    classes="gap-1",
+                    children=[
+                        ComponentRegistry.get("title_field")(
+                            uid="appointment-card-name",
+                            key="name",
+                        ),
+                        ComponentRegistry.get("subtitle_field")(
+                            uid="appointment-card-location",
+                            key="location",
+                        ),
+                        ComponentRegistry.get("row")(
+                            uid="appointment-card-times",
+                            classes="gap-4 text-sm text-base-content/70",
+                            children=[
+                                ComponentRegistry.get("inline_label")(
+                                    uid="appointment-card-start-label",
+                                    title="Start",
+                                    component=ComponentRegistry.get("datetime_field")(
+                                        uid="appointment-card-start-field",
+                                        key="start",
+                                    ),
+                                ),
+                                ComponentRegistry.get("inline_label")(
+                                    uid="appointment-card-end-label",
+                                    title="End",
+                                    component=ComponentRegistry.get("datetime_field")(
+                                        uid="appointment-card-end-field",
+                                        key="end",
+                                    ),
+                                ),
+                            ],
+                        ),
+                        ComponentRegistry.get("inline_label")(
+                            uid="appointment-card-phone-label",
+                            title="Phone",
+                            component=ComponentRegistry.get("text_field")(
+                                uid="appointment-card-phone-field",
+                                key="phone",
+                            ),
+                        ),
+                        ComponentRegistry.get("text_field")(
+                            uid="appointment-card-remarks",
+                            key="remarks",
+                            classes="text-sm text-base-content/60 mt-2",
+                        ),
+                    ],
+                ),
             ),
         ],
     )

@@ -10,12 +10,14 @@ AppointmentDelete = ViewRegistry.get("appointments.AppointmentDelete")
 AppointmentSelectionTable = ViewRegistry.get("appointments.AppointmentSelectionTable")
 
 AppointmentTimeline = ViewRegistry.get("appointments.AppointmentTimeline")
+AppointmentCardTimeline = ViewRegistry.get("appointments.AppointmentCardTimeline")
 
 app_name = "appointments"
 
 urlpatterns = [
     path("", AppointmentList.as_view(), name="default"),
     path("timeline/", AppointmentTimeline.as_view(), name="timeline"),
+    path("cards/", AppointmentCardTimeline.as_view(), name="cards"),
     path("create/", AppointmentCreate.as_view(), name="create"),
     path("<int:pk>/", AppointmentView.as_view(), name="detail"),
     path("<int:pk>/update/", AppointmentUpdate.as_view(), name="update"),

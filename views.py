@@ -139,6 +139,47 @@ class AppointmentSelectionTableView(SelectionTableViewMixin):
     title = "Select Appointment"
 
 
+@ViewRegistry.register("appointments.AppointmentCardTimeline")
+class AppointmentCardTimeline(ListViewMixin):
+    model = Appointment
+    component = "appointments.AppointmentCardTimeline"
+    key = "appointments"
+    paginate_by = None  # No pagination for timeline
+
+    def prepare_data(self, request, **kwargs):
+        from datetime import date
+        from django.db.models import Q
+
+        queryset = self.get_queryset()
+
+        if not (
+            self.request.user.is_superuser
+            or self.request.user.role in ["totschool_admin"]
+        ):
+            queryset = queryset.filter(created_by=self.request.user)
+
+        get_params = request.GET.dict()
+
+        # Get date filter, default to today
+        date_value = get_params.pop("date", None)
+        if not date_value:
+            date_value = date.today().isoformat()
+
+        queryset = queryset.filter(
+            Q(start__date=date_value) | Q(end__date=date_value)
+        )
+
+        # Order by start time
+        queryset = queryset.order_by("start")
+
+        queryset = apply_filters(queryset, get_params, self.model)
+
+        return {
+            self.get_key(): list(queryset),
+            "date": date_value,
+        }
+
+
 @ViewRegistry.register("appointments.AppointmentTimeline")
 class AppointmentTimeline(ChartViewMixin):
     model = Appointment
