@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from users.models import User
 from datetime import datetime
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Appointment(models.Model):
@@ -15,6 +16,8 @@ class Appointment(models.Model):
     location = models.CharField(max_length=250)
     start = models.DateTimeField()
     end = models.DateTimeField()
+    phone = PhoneNumberField(blank=True, null=True)
+    remarks = models.TextField(blank=True)
 
     def __str__(self):
         return self.name

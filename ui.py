@@ -200,6 +200,12 @@ UIRegistry.register("appointments.AppointmentFormFields")(
                     ),
                 ],
             ),
+            ComponentRegistry.get("phone_input")(
+                uid="appointment-form-phone",
+                key="phone",
+                label="Phone",
+                required=False,
+            ),
             ComponentRegistry.get("row")(
                 uid="appointment-form-row-2",
                 classes="grid grid-cols-1 gap-1 @md:grid-cols-2",
@@ -217,6 +223,12 @@ UIRegistry.register("appointments.AppointmentFormFields")(
                         required=True,
                     ),
                 ],
+            ),
+            ComponentRegistry.get("textarea_input")(
+                uid="appointment-form-remarks",
+                key="remarks",
+                label="Remarks",
+                required=False,
             ),
             ComponentRegistry.get("foreign_key_input")(
                 uid="appointment-form-created-by",
@@ -299,6 +311,15 @@ UIRegistry.register("appointments.AppointmentTable")(
                         ),
                     ),
                     ComponentRegistry.get("table_column")(
+                        uid="appointment-col-phone",
+                        label="Phone",
+                        key="phone",
+                        component=ComponentRegistry.get("text_field")(
+                            uid="appointment-col-phone-field",
+                            key="phone",
+                        ),
+                    ),
+                    ComponentRegistry.get("table_column")(
                         uid="appointment-col-start",
                         label="Start",
                         key="start",
@@ -356,6 +377,10 @@ UIRegistry.register("appointments.AppointmentDetail")(
                                 uid="appointment-detail-location",
                                 key="location",
                             ),
+                            ComponentRegistry.get("text_field")(
+                                uid="appointment-detail-phone",
+                                key="phone",
+                            ),
                             ComponentRegistry.get("inline_label")(
                                 uid="appointment-detail-start-label",
                                 title="Start",
@@ -379,6 +404,14 @@ UIRegistry.register("appointments.AppointmentDetail")(
                                 component=ComponentRegistry.get("text_field")(
                                     uid="appointment-detail-created-by-field",
                                     key="created_by",
+                                ),
+                            ),
+                            ComponentRegistry.get("inline_label")(
+                                uid="appointment-detail-remarks",
+                                title="Remarks",
+                                component=ComponentRegistry.get("text_field")(
+                                    uid="appointment-detail-remarks",
+                                    key="remarks",
                                 ),
                             ),
                             ComponentRegistry.get("overlap_warning")(
@@ -442,6 +475,15 @@ UIRegistry.register("appointments.AppointmentSelectionTable")(
                         component=ComponentRegistry.get("text_field")(
                             uid="appointment-sel-location-field",
                             key="location",
+                        ),
+                    ),
+                    ComponentRegistry.get("table_column")(
+                        uid="appointment-sel-col-phone",
+                        label="Phone",
+                        key="phone",
+                        component=ComponentRegistry.get("text_field")(
+                            uid="appointment-sel-phone-field",
+                            key="phone",
                         ),
                     ),
                     ComponentRegistry.get("table_column")(
