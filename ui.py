@@ -1,5 +1,6 @@
 from typing import List
 from django.urls import reverse_lazy, reverse
+from django.utils import timezone
 from lariv.registry import UIRegistry, ComponentRegistry
 from components.base import Component
 from users.models import User
@@ -26,11 +27,15 @@ class OverlapWarning(Component):
         if not overlapping:
             return ""
 
-        items_html = "".join(
-            f'<li><a href="{appt.get_absolute_url()}" class="link">{appt.name}</a> '
-            f"({appt.start.strftime('%b %d %H:%M')} - {appt.end.strftime('%H:%M')})</li>"
-            for appt in overlapping
-        )
+        items_html = ""
+        for appt in overlapping:
+            start_dt = timezone.localtime(appt.start)
+            end_dt = timezone.localtime(appt.end)
+
+            items_html += (
+                f'<li><a href="{appt.get_absolute_url()}" class="link">{appt.name}</a> '
+                f"({start_dt.strftime('%b %d %H:%M')} - {end_dt.strftime('%H:%M')})</li>"
+            )
 
         confirmation_html = ""
         if self.show_confirmation:
