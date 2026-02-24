@@ -199,7 +199,7 @@ UIRegistry.register("appointments.AppointmentFormFields")(
                         label="Name",
                         required=True,
                     ),
-                    ComponentRegistry.get("text_input")(
+                    ComponentRegistry.get("textarea_input")(
                         uid="appointment-form-location",
                         key="location",
                         label="Location",
