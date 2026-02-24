@@ -147,6 +147,7 @@ UIRegistry.register("appointments.AppointmentFilter")(
                 model=User,
                 label="Created By",
                 selection_url=reverse_lazy("users:multi_select"),
+                role=["totschool_admin"],
                 display_attr="name",
                 placeholder="Select users...",
             ),
@@ -412,8 +413,10 @@ UIRegistry.register("appointments.AppointmentDetail")(
                             ComponentRegistry.get("inline_label")(
                                 uid="appointment-detail-created-by-label",
                                 title="Created By",
+                                role=["totschool_admin"],
                                 component=ComponentRegistry.get("text_field")(
                                     uid="appointment-detail-created-by-field",
+                                    role=["totschool_admin"],
                                     key="created_by",
                                 ),
                             ),
