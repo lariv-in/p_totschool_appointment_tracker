@@ -6,9 +6,8 @@ import django.utils.timezone
 def compute_average_datetime(apps, schema_editor):
     Appointment = apps.get_model('p_totschool_appointment_tracker', 'Appointment')
     for appointment in Appointment.objects.all():
-        if appointment.start and appointment.end:
-            duration = appointment.end - appointment.start
-            appointment.datetime = appointment.start + duration / 2
+        if appointment.start:
+            appointment.datetime = appointment.start
             appointment.save()
 
 
