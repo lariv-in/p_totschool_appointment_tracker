@@ -61,258 +61,269 @@ class OverlapWarning(Component):
 
 
 # Menus
-UIRegistry.register("appointments.AppointmentMenu")(
-    Menu(
-        uid="appointment-menu",
-        title="Appointments",
-        back=MenuItem(
-            uid="appointment-menu-back",
-            title="Back to All Apps",
-            url=reverse_lazy("apps"),
-        ),
-        children=[
-            MenuItem(
-                uid="appointment-menu-list",
-                title="All Appointments",
+@UIRegistry.register("appointments.AppointmentMenu")
+class AppointmentMenu(Component):
+    def build(self):
+        return Menu(
+            uid="appointment-menu",
+            title="Appointments",
+            back=MenuItem(
+                uid="appointment-menu-back",
+                title="Back to All Apps",
+                url=reverse_lazy("apps"),
+            ),
+            children=[
+                MenuItem(
+                    uid="appointment-menu-list",
+                    title="All Appointments",
+                    url=reverse_lazy("appointments:default"),
+                ),
+                MenuItem(
+                    uid="appointment-menu-cards",
+                    title="Appointments Timeline",
+                    url=reverse_lazy("appointments:cards"),
+                ),
+                MenuItem(
+                    uid="appointment-menu-create",
+                    title="Create Appointment",
+                    url=reverse_lazy("appointments:create"),
+                ),
+            ],
+        )
+
+
+@UIRegistry.register("appointments.AppointmentDetailMenu")
+class AppointmentDetailMenu(Component):
+    def build(self):
+        return Menu(
+            uid="appointment-detail-menu",
+            back=MenuItem(
+                uid="appointment-detail-menu-back",
+                title="Back to all Appointments",
                 url=reverse_lazy("appointments:default"),
             ),
-            MenuItem(
-                uid="appointment-menu-cards",
-                title="Appointments Timeline",
-                url=reverse_lazy("appointments:cards"),
-            ),
-            MenuItem(
-                uid="appointment-menu-create",
-                title="Create Appointment",
-                url=reverse_lazy("appointments:create"),
-            ),
-        ],
-    )
-)
-
-UIRegistry.register("appointments.AppointmentDetailMenu")(
-    Menu(
-        uid="appointment-detail-menu",
-        back=MenuItem(
-            uid="appointment-detail-menu-back",
-            title="Back to all Appointments",
-            url=reverse_lazy("appointments:default"),
-        ),
-        key="appointment",
-        title=lambda o: f"Appointment: {o.name}",
-        children=[
-            MenuItem(
-                uid="appointment-detail-menu-detail",
-                title="Appointment Detail",
-                key="appointment",
-                url=lambda o: reverse("appointments:detail", args=[o.pk]),
-            ),
-            MenuItem(
-                uid="appointment-detail-menu-edit",
-                title="Edit Appointment",
-                key="appointment",
-                url=lambda o: reverse("appointments:update", args=[o.pk]),
-            ),
-            MenuItem(
-                uid="appointment-detail-menu-delete",
-                title="Delete Appointment",
-                key="appointment",
-                url=lambda o: reverse("appointments:delete", args=[o.pk]),
-            ),
-        ],
-    )
-)
+            key="appointment",
+            title=lambda o: f"Appointment: {o.name}",
+            children=[
+                MenuItem(
+                    uid="appointment-detail-menu-detail",
+                    title="Appointment Detail",
+                    key="appointment",
+                    url=lambda o: reverse("appointments:detail", args=[o.pk]),
+                ),
+                MenuItem(
+                    uid="appointment-detail-menu-edit",
+                    title="Edit Appointment",
+                    key="appointment",
+                    url=lambda o: reverse("appointments:update", args=[o.pk]),
+                ),
+                MenuItem(
+                    uid="appointment-detail-menu-delete",
+                    title="Delete Appointment",
+                    key="appointment",
+                    url=lambda o: reverse("appointments:delete", args=[o.pk]),
+                ),
+            ],
+        )
 
 
 # Filter
-UIRegistry.register("appointments.AppointmentFilter")(
-    Form(
-        uid="appointment-filter",
-        action=reverse_lazy("appointments:default"),
-        target="#appointment-table_display_content",
-        method="get",
-        swap="morph",
-        children=[
-            DateInput(
-                uid="appointment-filter-date",
-                key="date",
-                label="Date",
-            ),
-            TextInput(
-                uid="appointment-filter-name",
-                key="name",
-                label="Name",
-            ),
-            TextInput(
-                uid="appointment-filter-location",
-                key="location",
-                label="Location",
-            ),
-            ManyToManyInput(
-                uid="appointment-filter-created-by",
-                key="created_by",
-                model=User,
-                label="Created By",
-                selection_url=reverse_lazy("users:multi_select"),
-                role=["totschool_admin"],
-                display_attr="name",
-                placeholder="Select users...",
-            ),
-            CheckboxInput(
-                uid="appointment-filter-overlapping",
-                key="overlapping",
-                label="Overlaps",
-            ),
-            Row(
-                uid="appointment-filter-actions",
-                classes="flex gap-2",
-                children=[
-                    SubmitInput(
-                        uid="appointment-filter-submit",
-                        label="Apply Filters",
-                    ),
-                    ClearInput(
-                        uid="appointment-filter-clear",
-                        label="Clear",
-                    ),
-                ],
-            ),
-        ],
-    )
-)
+@UIRegistry.register("appointments.AppointmentFilter")
+class AppointmentFilter(Component):
+    def build(self):
+        return Form(
+            uid="appointment-filter",
+            action=reverse_lazy("appointments:default"),
+            target="#appointment-table_display_content",
+            method="get",
+            swap="morph",
+            children=[
+                DateInput(
+                    uid="appointment-filter-date",
+                    key="date",
+                    label="Date",
+                ),
+                TextInput(
+                    uid="appointment-filter-name",
+                    key="name",
+                    label="Name",
+                ),
+                TextInput(
+                    uid="appointment-filter-location",
+                    key="location",
+                    label="Location",
+                ),
+                ManyToManyInput(
+                    uid="appointment-filter-created-by",
+                    key="created_by",
+                    model=User,
+                    label="Created By",
+                    selection_url=reverse_lazy("users:multi_select"),
+                    role=["totschool_admin"],
+                    display_attr="name",
+                    placeholder="Select users...",
+                ),
+                CheckboxInput(
+                    uid="appointment-filter-overlapping",
+                    key="overlapping",
+                    label="Overlaps",
+                ),
+                Row(
+                    uid="appointment-filter-actions",
+                    classes="flex gap-2",
+                    children=[
+                        SubmitInput(
+                            uid="appointment-filter-submit",
+                            label="Apply Filters",
+                        ),
+                        ClearInput(
+                            uid="appointment-filter-clear",
+                            label="Clear",
+                        ),
+                    ],
+                ),
+            ],
+        )
 
 
 # Form Fields
-UIRegistry.register("appointments.AppointmentFormFields")(
-    Column(
-        uid="appointment-form-fields",
-        children=[
-            Row(
-                uid="appointment-form-row-1",
-                classes="grid grid-cols-1 gap-1 @md:grid-cols-2",
-                children=[
-                    TextInput(
-                        uid="appointment-form-name",
-                        key="name",
-                        label="Name",
-                        required=True,
-                    ),
-                    TextareaInput(
-                        uid="appointment-form-location",
-                        key="location",
-                        label="Location",
-                        required=True,
-                    ),
-                ],
-            ),
-            Row(
-                uid="appointment-form-row-2",
-                classes="grid grid-cols-1 gap-1 @md:grid-cols-2",
-                children=[
-                    PhoneInput(
-                        uid="appointment-form-phone",
-                        key="phone",
-                        label="Phone",
-                        required=True,
-                    ),
-                    DateTimeInput(
-                        uid="appointment-form-datetime",
-                        key="datetime",
-                        label="Date & Time",
-                        required=True,
-                    ),
-                ],
-            ),
-            TextareaInput(
-                uid="appointment-form-remarks",
-                key="remarks",
-                label="Remarks",
-                required=False,
-            ),
-            ForeignKeyInput(
-                uid="appointment-form-created-by",
-                key="created_by",
-                model=User,
-                label="Created By",
-                selection_url=reverse_lazy("users:select"),
-                display_attr="name",
-                role=["totschool_admin"],
-                placeholder="Select a user...",
-                required=True,
-            ),
-            SubmitInput(
-                uid="appointment-form-submit",
-                label="Save Appointment",
-            ),
-        ],
-    )
-)
+@UIRegistry.register("appointments.AppointmentFormFields")
+class AppointmentFormFields(Component):
+    def build(self):
+        return Column(
+            uid="appointment-form-fields",
+            children=[
+                Row(
+                    uid="appointment-form-row-1",
+                    classes="grid grid-cols-1 gap-1 @md:grid-cols-2",
+                    children=[
+                        TextInput(
+                            uid="appointment-form-name",
+                            key="name",
+                            label="Name",
+                            required=True,
+                        ),
+                        TextareaInput(
+                            uid="appointment-form-location",
+                            key="location",
+                            label="Location",
+                            required=True,
+                        ),
+                    ],
+                ),
+                Row(
+                    uid="appointment-form-row-2",
+                    classes="grid grid-cols-1 gap-1 @md:grid-cols-2",
+                    children=[
+                        PhoneInput(
+                            uid="appointment-form-phone",
+                            key="phone",
+                            label="Phone",
+                            required=True,
+                        ),
+                        DateTimeInput(
+                            uid="appointment-form-datetime",
+                            key="datetime",
+                            label="Date & Time",
+                            required=True,
+                        ),
+                    ],
+                ),
+                TextareaInput(
+                    uid="appointment-form-remarks",
+                    key="remarks",
+                    label="Remarks",
+                    required=False,
+                ),
+                ForeignKeyInput(
+                    uid="appointment-form-created-by",
+                    key="created_by",
+                    model=User,
+                    label="Created By",
+                    selection_url=reverse_lazy("users:select"),
+                    display_attr="name",
+                    role=["totschool_admin"],
+                    placeholder="Select a user...",
+                    required=True,
+                ),
+                SubmitInput(
+                    uid="appointment-form-submit",
+                    label="Save Appointment",
+                ),
+            ],
+        )
 
-UIRegistry.register("appointments.AppointmentCreateForm")(
-    ScaffoldLayout(
-        uid="appointment-create-scaffold",
-        sidebar_children=[
-            UIRegistry.get("appointments.AppointmentMenu"),
-        ],
-        children=[
-            Form(
-                uid="appointment-create-form",
-                action=reverse_lazy("appointments:create"),
-                target="#app-layout",
-                key="appointment",
-                title="Create Appointment",
-                subtitle="Create a new appointment",
-                classes="@container",
-                children=[UIRegistry.get("appointments.AppointmentFormFields")],
-            )
-        ],
-    )
-)
 
-UIRegistry.register("appointments.AppointmentUpdateForm")(
-    ScaffoldLayout(
-        uid="appointment-update-scaffold",
-        sidebar_children=[
-            UIRegistry.get("appointments.AppointmentDetailMenu"),
-        ],
-        children=[
-            Form(
-                uid="appointment-update-form",
-                action=lambda obj: reverse("appointments:update", args=[obj.pk]),
-                target="#app-layout",
-                key="appointment",
-                title="Edit Appointment",
-                subtitle="Update appointment details",
-                classes="@container",
-                children=[UIRegistry.get("appointments.AppointmentFormFields")],
-            )
-        ],
-    )
-)
+@UIRegistry.register("appointments.AppointmentCreateForm")
+class AppointmentCreateForm(Component):
+    def build(self):
+        return ScaffoldLayout(
+            uid="appointment-create-scaffold",
+            sidebar_children=[
+                UIRegistry.get("appointments.AppointmentMenu")().build(),
+            ],
+            children=[
+                Form(
+                    uid="appointment-create-form",
+                    action=reverse_lazy("appointments:create"),
+                    target="#app-layout",
+                    key="appointment",
+                    title="Create Appointment",
+                    subtitle="Create a new appointment",
+                    classes="@container",
+                    children=[UIRegistry.get("appointments.AppointmentFormFields")().build()],
+                )
+            ],
+        )
+
+
+@UIRegistry.register("appointments.AppointmentUpdateForm")
+class AppointmentUpdateForm(Component):
+    def build(self):
+        return ScaffoldLayout(
+            uid="appointment-update-scaffold",
+            sidebar_children=[
+                UIRegistry.get("appointments.AppointmentDetailMenu")().build(),
+            ],
+            children=[
+                Form(
+                    uid="appointment-update-form",
+                    action=lambda obj: reverse("appointments:update", args=[obj.pk]),
+                    target="#app-layout",
+                    key="appointment",
+                    title="Edit Appointment",
+                    subtitle="Update appointment details",
+                    classes="@container",
+                    children=[UIRegistry.get("appointments.AppointmentFormFields")().build()],
+                )
+            ],
+        )
 
 
 # Table
-UIRegistry.register("appointments.AppointmentTable")(
-    ScaffoldLayout(
-        uid="appointment-table-scaffold",
-        sidebar_children=[
-            UIRegistry.get("appointments.AppointmentMenu"),
-        ],
-        children=[
-            Table(
-                uid="appointment-table",
-                classes="w-full",
-                key="appointments",
-                title="Appointments",
-                displays={
-                    "Grid": TableGridContent,
-                    "List": TableListContent,
-                },
-                subtitle="List of appointments",
-                create_url=reverse_lazy("appointments:create"),
-                row_url=lambda o: reverse("appointments:detail", args=[o.pk]),
-                filter_component=UIRegistry.get("appointments.AppointmentFilter"),
-                columns=[
+@UIRegistry.register("appointments.AppointmentTable")
+class AppointmentTable(Component):
+    def build(self):
+        return ScaffoldLayout(
+            uid="appointment-table-scaffold",
+            sidebar_children=[
+                UIRegistry.get("appointments.AppointmentMenu")().build(),
+            ],
+            children=[
+                Table(
+                    uid="appointment-table",
+                    classes="w-full",
+                    key="appointments",
+                    title="Appointments",
+                    displays={
+                        "Grid": TableGridContent,
+                        "List": TableListContent,
+                    },
+                    subtitle="List of appointments",
+                    create_url=reverse_lazy("appointments:create"),
+                    row_url=lambda o: reverse("appointments:detail", args=[o.pk]),
+                    filter_component=UIRegistry.get("appointments.AppointmentFilter")().build(),
+                    columns=[
                     TableColumn(
                         uid="appointment-col-name",
                         label="Name",
@@ -360,11 +371,11 @@ UIRegistry.register("appointments.AppointmentTable")(
                             role=["totschool_admin"],
                         ),
                     ),
-                    ComponentRegistry.get("table_column")(
+                    TableColumn(
                         uid="appointment-col-created-at",
                         label="Created At",
                         key="created_at",
-                        component=ComponentRegistry.get("datetime_field")(
+                        component=DateTimeField(
                             uid="appointment-col-created-at-field",
                             key="created_at",
                         ),
@@ -372,25 +383,26 @@ UIRegistry.register("appointments.AppointmentTable")(
                 ],
             )
         ],
-    )
-)
+        )
 
 
 # Detail
-UIRegistry.register("appointments.AppointmentDetail")(
-    ScaffoldLayout(
-        uid="appointment-detail-scaffold",
-        sidebar_children=[
-            UIRegistry.get("appointments.AppointmentDetailMenu"),
-        ],
-        children=[
-            Detail(
-                uid="appointment-detail-view",
-                key="appointment",
-                children=[
-                    Column(
-                        uid="appointment-detail",
-                        children=[
+@UIRegistry.register("appointments.AppointmentDetail")
+class AppointmentDetail(Component):
+    def build(self):
+        return ScaffoldLayout(
+            uid="appointment-detail-scaffold",
+            sidebar_children=[
+                UIRegistry.get("appointments.AppointmentDetailMenu")().build(),
+            ],
+            children=[
+                Detail(
+                    uid="appointment-detail-view",
+                    key="appointment",
+                    children=[
+                            Column(
+                            uid="appointment-detail",
+                            children=[
                             TitleField(
                                 uid="appointment-detail-name",
                                 key="name",
@@ -454,19 +466,20 @@ UIRegistry.register("appointments.AppointmentDetail")(
                 ],
             )
         ],
-    )
-)
+        )
 
 
 # Delete Form
-UIRegistry.register("appointments.AppointmentDeleteForm")(
-    ScaffoldLayout(
-        uid="appointment-delete-scaffold",
-        sidebar_children=[
-            UIRegistry.get("appointments.AppointmentDetailMenu"),
-        ],
-        children=[
-            DeleteConfirmation(
+@UIRegistry.register("appointments.AppointmentDeleteForm")
+class AppointmentDeleteForm(Component):
+    def build(self):
+        return ScaffoldLayout(
+            uid="appointment-delete-scaffold",
+            sidebar_children=[
+                UIRegistry.get("appointments.AppointmentDetailMenu")().build(),
+            ],
+            children=[
+                DeleteConfirmation(
                 uid="appointment-delete-confirmation",
                 key="appointment",
                 title="Confirm Deletion",
@@ -474,17 +487,18 @@ UIRegistry.register("appointments.AppointmentDeleteForm")(
                 cancel_url=lambda obj: reverse("appointments:detail", args=[obj.pk]),
             ),
         ],
-    )
-)
+        )
 
 
 # Selection Table for Foreign Key inputs
-UIRegistry.register("appointments.AppointmentSelectionTable")(
-    Modal(
-        uid="appointment-selection-modal",
-        title="Select Appointment",
-        children=[
-            SelectionTable(
+@UIRegistry.register("appointments.AppointmentSelectionTable")
+class AppointmentSelectionTable(Component):
+    def build(self):
+        return Modal(
+            uid="appointment-selection-modal",
+            title="Select Appointment",
+            children=[
+                SelectionTable(
                 uid="appointment-selection-table",
                 key="appointments",
                 value_key="pk",
@@ -526,11 +540,11 @@ UIRegistry.register("appointments.AppointmentSelectionTable")(
                             key="datetime",
                         ),
                     ),
-                    ComponentRegistry.get("table_column")(
+                    TableColumn(
                         uid="appointment-sel-col-created-at",
                         label="Created At",
                         key="created_at",
-                        component=ComponentRegistry.get("datetime_field")(
+                        component=DateTimeField(
                             uid="appointment-sel-created-at-field",
                             key="created_at",
                         ),
@@ -538,46 +552,48 @@ UIRegistry.register("appointments.AppointmentSelectionTable")(
                 ],
             ),
         ],
-    )
-)
+        )
 
 
 # Card Timeline Filter
-UIRegistry.register("appointments.AppointmentCardTimelineFilter")(
-    Form(
-        uid="appointment-card-timeline-filter",
-        action=reverse_lazy("appointments:cards"),
-        target="#appointment-card-timeline",
-        method="get",
-        swap="outerHTML",
-        hx_trigger="change",
-        classes="flex items-center gap-2",
-        children=[
-            DateInput(
-                uid="appointment-card-timeline-filter-date",
-                key="date",
-                label="",
-            ),
-        ],
-    )
-)
+@UIRegistry.register("appointments.AppointmentCardTimelineFilter")
+class AppointmentCardTimelineFilter(Component):
+    def build(self):
+        return Form(
+            uid="appointment-card-timeline-filter",
+            action=reverse_lazy("appointments:cards"),
+            target="#appointment-card-timeline",
+            method="get",
+            swap="outerHTML",
+            hx_trigger="change",
+            classes="flex items-center gap-2",
+            children=[
+                DateInput(
+                    uid="appointment-card-timeline-filter-date",
+                    key="date",
+                    label="",
+                ),
+            ],
+        )
 
 
 # Card Timeline (using Timeline component)
-UIRegistry.register("appointments.AppointmentCardTimeline")(
-    ScaffoldLayout(
-        uid="appointment-card-timeline-scaffold",
-        sidebar_children=[
-            UIRegistry.get("appointments.AppointmentMenu"),
-        ],
-        children=[
-            Timeline(
-                uid="appointment-card-timeline",
-                key="appointments",
-                title="Appointments",
-                filter_component=UIRegistry.get(
-                    "appointments.AppointmentCardTimelineFilter"
-                ),
+@UIRegistry.register("appointments.AppointmentCardTimeline")
+class AppointmentCardTimeline(Component):
+    def build(self):
+        return ScaffoldLayout(
+            uid="appointment-card-timeline-scaffold",
+            sidebar_children=[
+                UIRegistry.get("appointments.AppointmentMenu")().build(),
+            ],
+            children=[
+                Timeline(
+                    uid="appointment-card-timeline",
+                    key="appointments",
+                    title="Appointments",
+                    filter_component=UIRegistry.get(
+                        "appointments.AppointmentCardTimelineFilter"
+                    )().build(),
                 row_url=lambda o: o.get_absolute_url(),
                 classes="max-h-[80vh]",
                 fields=Column(
@@ -623,47 +639,47 @@ UIRegistry.register("appointments.AppointmentCardTimeline")(
                 ),
             ),
         ],
-    )
-)
+        )
 
 
 # Timeline Chart
-UIRegistry.register("appointments.AppointmentTimeline")(
-    ScaffoldLayout(
-        uid="appointment-timeline-scaffold",
-        sidebar_children=[
-            UIRegistry.get("appointments.AppointmentMenu"),
-        ],
-        children=[
-            Chart(
-                uid="appointment-timeline-chart",
-                url=reverse_lazy("appointments:timeline"),
-                type="rangeBar",
-                title="Appointments Timeline",
-                subtitle="Schedule of all appointments over time",
-                filter_component=UIRegistry.get("appointments.AppointmentFilter"),
-                options={
-                    "chart": {
-                        "zoom": {
-                            "enabled": True,
-                            "type": "x",
-                        },
-                        "toolbar": {
-                            "show": True,
-                            "tools": {
-                                "zoom": True,
-                                "zoomin": True,
-                                "zoomout": True,
-                                "pan": True,
-                                "reset": True,
+@UIRegistry.register("appointments.AppointmentTimeline")
+class AppointmentTimeline(Component):
+    def build(self):
+        return ScaffoldLayout(
+            uid="appointment-timeline-scaffold",
+            sidebar_children=[
+                UIRegistry.get("appointments.AppointmentMenu")().build(),
+            ],
+            children=[
+                Chart(
+                    uid="appointment-timeline-chart",
+                    url=reverse_lazy("appointments:timeline"),
+                    type="rangeBar",
+                    title="Appointments Timeline",
+                    subtitle="Schedule of all appointments over time",
+                    filter_component=UIRegistry.get("appointments.AppointmentFilter")().build(),
+                    options={
+                        "chart": {
+                            "zoom": {
+                                "enabled": True,
+                                "type": "x",
+                            },
+                            "toolbar": {
+                                "show": True,
+                                "tools": {
+                                    "zoom": True,
+                                    "zoomin": True,
+                                    "zoomout": True,
+                                    "pan": True,
+                                    "reset": True,
+                                },
                             },
                         },
+                        "plotOptions": {"bar": {"horizontal": True}},
+                        "xaxis": {"type": "datetime"},
+                        "tooltip": {"x": {"format": "dd MMM yyyy HH:mm"}},
                     },
-                    "plotOptions": {"bar": {"horizontal": True}},
-                    "xaxis": {"type": "datetime"},
-                    "tooltip": {"x": {"format": "dd MMM yyyy HH:mm"}},
-                },
             )
         ],
-    )
-)
+        )
