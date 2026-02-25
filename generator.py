@@ -60,6 +60,12 @@ class AppointmentGenerator(BaseGenerator):
 
     def clean(self):
         print("Deleting existing appointments")
+        # Delete generated letters first (FK constraint)
+        try:
+            from p_totschool_appointment_letter.models import GeneratedLetter
+            GeneratedLetter.objects.all().delete()
+        except Exception:
+            pass
         Appointment.objects.all().delete()
 
     def generate_appointments_for_user(self, user: User, count: int):
