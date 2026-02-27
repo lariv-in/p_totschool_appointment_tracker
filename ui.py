@@ -175,23 +175,17 @@ class AppointmentFormFields(Component):
         return Column(
             uid="appointment-form-fields",
             children=[
-                Row(
-                    uid="appointment-form-row-1",
-                    classes="grid grid-cols-1 gap-1 @md:grid-cols-2",
-                    children=[
-                        TextInput(
-                            uid="appointment-form-name",
-                            key="name",
-                            label="Name",
-                            required=True,
-                        ),
-                        TextareaInput(
-                            uid="appointment-form-location",
-                            key="location",
-                            label="Location",
-                            required=True,
-                        ),
-                    ],
+                TextInput(
+                    uid="appointment-form-name",
+                    key="name",
+                    label="Name",
+                    required=True,
+                ),
+                TextareaInput(
+                    uid="appointment-form-location",
+                    key="location",
+                    label="Location",
+                    required=True,
                 ),
                 Row(
                     uid="appointment-form-row-2",
@@ -410,28 +404,24 @@ class AppointmentDetail(Component):
                                         kwargs.get("overlapping_appointments")
                                     ),
                                     children=[
-                                        Row(
-                                            classes="alert alert-warning mb-4 shadow-sm items-center gap-4 p-4",
+                                        Column(
+                                            classes="bg-warning rounded-box border border-base-300 mb-4 shadow-sm gap-4 p-4",
                                             children=[
                                                 TextField(
                                                     uid="overlap-warning-msg",
                                                     static_value="⚠️ Warning: This appointment conflicts with existing schedule!",
-                                                    classes="font-bold text-xs min-w-32 w-1/5",
                                                 ),
                                                 ListField(
                                                     uid="appointment-detail-overlap-list",
                                                     key="overlapping_appointments",
                                                     children=[
-                                                        Row(
+                                                        Column(
                                                             url=lambda o: o.get_absolute_url(),
-                                                            classes="flex gap-2 items-center text-sm link link-primary bg-black/5 border border-black/10 p-1 px-2 rounded-md transition-colors w-fit",
+                                                            classes="text-sm link link-primary bg-black/5 border border-black/10 p-1 px-2 rounded-md transition-colors w-fit",
                                                             children=[
                                                                 TextField(
                                                                     key="name",
-                                                                    classes="font-semibold",
-                                                                ),
-                                                                TextField(
-                                                                    static_value=" - "
+                                                                    classes="font-bold",
                                                                 ),
                                                                 DateTimeField(
                                                                     key="datetime"
@@ -531,7 +521,7 @@ class AppointmentDeleteForm(Component):
                     key="appointment",
                     title="Confirm Deletion",
                     message="Are you sure you want to delete this appointment?",
-                    cancel_url=lambda obj: reverse(
+                    url=lambda obj: reverse(
                         "appointments:detail", args=[obj.pk]
                     ),
                 ),
