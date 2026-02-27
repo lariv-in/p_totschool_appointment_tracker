@@ -1,8 +1,6 @@
 from django.urls import reverse, reverse_lazy
+from datetime import date
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
-from django.shortcuts import redirect
-from django.core.exceptions import ValidationError
 from lariv.mixins import (
     ListViewMixin,
     DetailViewMixin,
@@ -78,7 +76,6 @@ class AppointmentView(DetailViewMixin):
         overlapping = appointment.get_overlapping_appointments()
         if overlapping.exists():
             data["overlapping_appointments"] = overlapping
-            data["show_overlap_warning"] = True
         return data
 
 
@@ -146,8 +143,6 @@ class AppointmentCardTimeline(ListViewMixin):
     paginate_by = None  # No pagination for timeline
 
     def prepare_data(self, request, **kwargs):
-        from datetime import date
-        from django.db.models import Q
 
         queryset = self.get_queryset()
 

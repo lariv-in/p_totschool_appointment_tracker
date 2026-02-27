@@ -1,9 +1,7 @@
 from django.db import models
 from django.urls import reverse
-from django.db.models import Q
-from django.core.exceptions import ValidationError
 from users.models import User
-from datetime import datetime, timedelta
+from datetime import timedelta
 from phonenumber_field.modelfields import PhoneNumberField
 
 

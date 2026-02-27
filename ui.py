@@ -1,63 +1,45 @@
+from components.menu import MenuItem, Menu
+from components.detail import Detail
+from components.modals import Modal
+from components.tables import (
+    TableColumn,
+    TableGridContent,
+    TableListContent,
+    Table,
+)
+from components.forms import (
+    DateInput,
+    Form,
+    DeleteConfirmation,
+    SubmitInput,
+    ForeignKeyInput,
+    TextareaInput,
+    DateTimeInput,
+    PhoneInput,
+    TextInput,
+    ClearInput,
+    CheckboxInput,
+    ManyToManyInput,
+    ShowIf,
+)
+from components.timeline import Timeline
+from components.container import Row, Column
+from components.labels import InlineLabel
+from components.fields import (
+    TextField,
+    DateTimeField,
+    SubtitleField,
+    TitleField,
+    ListField,
+)
+from components.layouts import ScaffoldLayout
+from components.charts import Chart
 from typing import List
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from lariv.registry import UIRegistry
 from components.base import Component
 from users.models import User
-from components import *  # noqa
-
-
-class OverlapWarning(Component):
-    """Shows a warning when appointments overlap, with optional confirmation checkbox."""
-
-    def __init__(
-        self,
-        uid: str = "",
-        classes: str = "",
-        show_confirmation: bool = True,
-        role: List[str] = [],
-    ):
-        super().__init__(classes, uid, role)
-        self.show_confirmation = show_confirmation
-
-    def render_html(self, **kwargs) -> str:
-        if not kwargs.get("show_overlap_warning"):
-            return ""
-
-        overlapping = kwargs.get("overlapping_appointments", [])
-        if not overlapping:
-            return ""
-
-        items_html = ""
-        for appt in overlapping:
-            dt = timezone.localtime(appt.datetime)
-
-            items_html += (
-                f'<li><a href="{appt.get_absolute_url()}" class="link">{appt.name}</a> '
-                f"({dt.strftime('%b %d %H:%M')})</li>"
-            )
-
-        confirmation_html = ""
-        if self.show_confirmation:
-            confirmation_html = """
-            <div class="flex gap-2 mt-2">
-                <input type="checkbox" name="confirm_overlap" value="true" class="checkbox checkbox-sm" id="confirm-overlap-checkbox" />
-                <label for="confirm-overlap-checkbox" class="text-sm">I understand and want to save anyway</label>
-            </div>
-            """
-
-        return f"""
-        <div id="{self.uid}" class="bg-warning p-4 rounded-box border border-base-300 my-4 flex flex-col">
-            <div>
-                <div>
-                    <h3 class="font-bold">Overlapping Appointments</h3>
-                    <p class="text-sm">This appointment overlaps with:</p>
-                    <ul class="list-disc list-inside text-sm mt-1">{items_html}</ul>
-                </div>
-            </div>
-            {confirmation_html}
-        </div>
-        """
 
 
 # Menus
@@ -133,7 +115,7 @@ class AppointmentFilter(Component):
     def build(self):
         return Form(
             uid="appointment-filter",
-            action=reverse_lazy("appointments:default"),
+            url=reverse_lazy("appointments:default"),
             target="#appointment-table_display_content",
             method="get",
             swap="morph",
@@ -158,7 +140,7 @@ class AppointmentFilter(Component):
                     key="created_by",
                     model=User,
                     label="Created By",
-                    selection_url=reverse_lazy("users:multi_select"),
+                    url=reverse_lazy("users:multi_select"),
                     role=["totschool_admin"],
                     display_attr="name",
                     placeholder="Select users...",
@@ -240,7 +222,7 @@ class AppointmentFormFields(Component):
                     key="created_by",
                     model=User,
                     label="Created By",
-                    selection_url=reverse_lazy("users:select"),
+                    url=reverse_lazy("users:select"),
                     display_attr="name",
                     role=["totschool_admin"],
                     placeholder="Select a user...",
@@ -265,13 +247,15 @@ class AppointmentCreateForm(Component):
             children=[
                 Form(
                     uid="appointment-create-form",
-                    action=reverse_lazy("appointments:create"),
+                    url=reverse_lazy("appointments:create"),
                     target="#app-layout",
                     key="appointment",
                     title="Create Appointment",
                     subtitle="Create a new appointment",
                     classes="@container",
-                    children=[UIRegistry.get("appointments.AppointmentFormFields")().build()],
+                    children=[
+                        UIRegistry.get("appointments.AppointmentFormFields")().build()
+                    ],
                 )
             ],
         )
@@ -288,13 +272,15 @@ class AppointmentUpdateForm(Component):
             children=[
                 Form(
                     uid="appointment-update-form",
-                    action=lambda obj: reverse("appointments:update", args=[obj.pk]),
+                    url=lambda obj: reverse("appointments:update", args=[obj.pk]),
                     target="#app-layout",
                     key="appointment",
                     title="Edit Appointment",
                     subtitle="Update appointment details",
                     classes="@container",
-                    children=[UIRegistry.get("appointments.AppointmentFormFields")().build()],
+                    children=[
+                        UIRegistry.get("appointments.AppointmentFormFields")().build()
+                    ],
                 )
             ],
         )
@@ -321,68 +307,82 @@ class AppointmentTable(Component):
                     },
                     subtitle="List of appointments",
                     create_url=reverse_lazy("appointments:create"),
-                    row_url=lambda o: reverse("appointments:detail", args=[o.pk]),
-                    filter_component=UIRegistry.get("appointments.AppointmentFilter")().build(),
+                    url=lambda o: reverse("appointments:detail", args=[o.pk]),
+                    filter_component=UIRegistry.get(
+                        "appointments.AppointmentFilter"
+                    )().build(),
                     columns=[
-                    TableColumn(
-                        uid="appointment-col-name",
-                        label="Name",
-                        key="name",
-                        component=TextField(
-                            uid="appointment-col-name-field",
+                        TableColumn(
+                            uid="appointment-col-name",
+                            label="Name",
                             key="name",
+                            children=[
+                                TextField(
+                                    uid="appointment-col-name-field",
+                                    key="name",
+                                )
+                            ],
                         ),
-                    ),
-                    TableColumn(
-                        uid="appointment-col-location",
-                        label="Location",
-                        key="location",
-                        component=TextField(
-                            uid="appointment-col-location-field",
+                        TableColumn(
+                            uid="appointment-col-location",
+                            label="Location",
                             key="location",
+                            children=[
+                                TextField(
+                                    uid="appointment-col-location-field",
+                                    key="location",
+                                )
+                            ],
                         ),
-                    ),
-                    TableColumn(
-                        uid="appointment-col-phone",
-                        label="Phone",
-                        key="phone",
-                        component=TextField(
-                            uid="appointment-col-phone-field",
+                        TableColumn(
+                            uid="appointment-col-phone",
+                            label="Phone",
                             key="phone",
+                            children=[
+                                TextField(
+                                    uid="appointment-col-phone-field",
+                                    key="phone",
+                                )
+                            ],
                         ),
-                    ),
-                    TableColumn(
-                        uid="appointment-col-datetime",
-                        label="Date & Time",
-                        key="datetime",
-                        component=DateTimeField(
-                            uid="appointment-col-datetime-field",
+                        TableColumn(
+                            uid="appointment-col-datetime",
+                            label="Date & Time",
                             key="datetime",
+                            children=[
+                                DateTimeField(
+                                    uid="appointment-col-datetime-field",
+                                    key="datetime",
+                                )
+                            ],
                         ),
-                    ),
-                    TableColumn(
-                        uid="appointment-col-created-by",
-                        label="Created By",
-                        key="created_by",
-                        role=["totschool_admin"],
-                        component=TextField(
-                            uid="appointment-col-created-by-field",
+                        TableColumn(
+                            uid="appointment-col-created-by",
+                            label="Created By",
                             key="created_by",
                             role=["totschool_admin"],
+                            children=[
+                                TextField(
+                                    uid="appointment-col-created-by-field",
+                                    key="created_by",
+                                    role=["totschool_admin"],
+                                )
+                            ],
                         ),
-                    ),
-                    TableColumn(
-                        uid="appointment-col-created-at",
-                        label="Created At",
-                        key="created_at",
-                        component=DateTimeField(
-                            uid="appointment-col-created-at-field",
+                        TableColumn(
+                            uid="appointment-col-created-at",
+                            label="Created At",
                             key="created_at",
+                            children=[
+                                DateTimeField(
+                                    uid="appointment-col-created-at-field",
+                                    key="created_at",
+                                )
+                            ],
                         ),
-                    ),
-                ],
-            )
-        ],
+                    ],
+                )
+            ],
         )
 
 
@@ -400,72 +400,119 @@ class AppointmentDetail(Component):
                     uid="appointment-detail-view",
                     key="appointment",
                     children=[
-                            Column(
+                        Column(
                             uid="appointment-detail",
                             children=[
-                            TitleField(
-                                uid="appointment-detail-name",
-                                key="name",
-                            ),
-                            SubtitleField(
-                                uid="appointment-detail-location",
-                                key="location",
-                            ),
-                            InlineLabel(
-                                uid="appointment-detail-phone-label",
-                                title="Phone",
-                                classes="mt-2",
-                                component=TextField(
-                                    uid="appointment-detail-phone",
-                                    key="phone",
+                                ShowIf(
+                                    uid="appointment-detail-overlap-warning-alert",
+                                    key="overlapping_appointments",
+                                    render_cond=lambda c, kwargs: bool(
+                                        kwargs.get("overlapping_appointments")
+                                    ),
+                                    children=[
+                                        Row(
+                                            classes="alert alert-warning mb-4 shadow-sm items-center gap-4 p-4",
+                                            children=[
+                                                TextField(
+                                                    uid="overlap-warning-msg",
+                                                    static_value="⚠️ Warning: This appointment conflicts with existing schedule!",
+                                                    classes="font-bold text-xs min-w-32 w-1/5",
+                                                ),
+                                                ListField(
+                                                    uid="appointment-detail-overlap-list",
+                                                    key="overlapping_appointments",
+                                                    children=[
+                                                        Row(
+                                                            url=lambda o: o.get_absolute_url(),
+                                                            classes="flex gap-2 items-center text-sm link link-primary bg-black/5 border border-black/10 p-1 px-2 rounded-md transition-colors w-fit",
+                                                            children=[
+                                                                TextField(
+                                                                    key="name",
+                                                                    classes="font-semibold",
+                                                                ),
+                                                                TextField(
+                                                                    static_value=" - "
+                                                                ),
+                                                                DateTimeField(
+                                                                    key="datetime"
+                                                                ),
+                                                            ],
+                                                        )
+                                                    ],
+                                                ),
+                                            ],
+                                        )
+                                    ],
                                 ),
-                            ),
-                            InlineLabel(
-                                uid="appointment-detail-datetime-label",
-                                title="Date & Time",
-                                classes="mt-2",
-                                component=DateTimeField(
-                                    uid="appointment-detail-datetime-field",
-                                    key="datetime",
+                                TitleField(
+                                    uid="appointment-detail-name",
+                                    key="name",
                                 ),
-                            ),
-                            InlineLabel(
-                                uid="appointment-detail-created-by-label",
-                                title="Created By",
-                                role=["totschool_admin"],
-                                component=TextField(
-                                    uid="appointment-detail-created-by-field",
+                                SubtitleField(
+                                    uid="appointment-detail-location",
+                                    key="location",
+                                ),
+                                InlineLabel(
+                                    uid="appointment-detail-phone-label",
+                                    title="Phone",
+                                    classes="mt-2",
+                                    children=[
+                                        TextField(
+                                            uid="appointment-detail-phone",
+                                            key="phone",
+                                        )
+                                    ],
+                                ),
+                                InlineLabel(
+                                    uid="appointment-detail-datetime-label",
+                                    title="Date & Time",
+                                    classes="mt-2",
+                                    children=[
+                                        DateTimeField(
+                                            uid="appointment-detail-datetime-field",
+                                            key="datetime",
+                                        )
+                                    ],
+                                ),
+                                InlineLabel(
+                                    uid="appointment-detail-created-by-label",
+                                    title="Created By",
                                     role=["totschool_admin"],
-                                    key="created_by",
+                                    children=[
+                                        TextField(
+                                            uid="appointment-detail-created-by-field",
+                                            role=["totschool_admin"],
+                                            key="created_by",
+                                        )
+                                    ],
                                 ),
-                            ),
-                            InlineLabel(
-                                uid="appointment-detail-remarks",
-                                title="Remarks",
-                                component=TextField(
+                                InlineLabel(
                                     uid="appointment-detail-remarks",
-                                    key="remarks",
+                                    title="Remarks",
+                                    children=[
+                                        TextField(
+                                            uid="appointment-detail-remarks",
+                                            key="remarks",
+                                        )
+                                    ],
                                 ),
-                            ),
-                            InlineLabel(
-                                uid="appointment-detail-created-at-label",
-                                title="Created At",
-                                role=["totschool_admin"],
-                                component=DateTimeField(
-                                    uid="appointment-detail-created-at-field",
+                                InlineLabel(
+                                    uid="appointment-detail-created-at-label",
+                                    title="Created At",
                                     role=["totschool_admin"],
-                                    key="created_at",
+                                    children=[
+                                        DateTimeField(
+                                            uid="appointment-detail-created-at-field",
+                                            role=["totschool_admin"],
+                                            key="created_at",
+                                        )
+                                    ],
                                 ),
-                            ),
-                            OverlapWarning(
-                                uid="appointment-detail-overlap-warning",
-                                show_confirmation=False,
-                            ),
-                        ],
-                    ),
-                ],
-            )
-        ],
+                            ],
+                        ),
+                    ],
+                )
+            ],
         )
 
 
@@ -480,13 +527,15 @@ class AppointmentDeleteForm(Component):
             ],
             children=[
                 DeleteConfirmation(
-                uid="appointment-delete-confirmation",
-                key="appointment",
-                title="Confirm Deletion",
-                message="Are you sure you want to delete this appointment?",
-                cancel_url=lambda obj: reverse("appointments:detail", args=[obj.pk]),
-            ),
-        ],
+                    uid="appointment-delete-confirmation",
+                    key="appointment",
+                    title="Confirm Deletion",
+                    message="Are you sure you want to delete this appointment?",
+                    cancel_url=lambda obj: reverse(
+                        "appointments:detail", args=[obj.pk]
+                    ),
+                ),
+            ],
         )
 
 
@@ -498,60 +547,71 @@ class AppointmentSelectionTable(Component):
             uid="appointment-selection-modal",
             title="Select Appointment",
             children=[
-                SelectionTable(
-                uid="appointment-selection-table",
-                key="appointments",
-                value_key="pk",
-                display_key="name",
-                columns=[
-                    TableColumn(
-                        uid="appointment-sel-col-name",
-                        label="Name",
-                        key="name",
-                        component=TextField(
-                            uid="appointment-sel-name-field",
+                Table(
+                    uid="appointment-selection-table",
+                    key="appointments",
+                    select="single",
+                    value_key="pk",
+                    display_key="name",
+                    columns=[
+                        TableColumn(
+                            uid="appointment-sel-col-name",
+                            label="Name",
                             key="name",
+                            children=[
+                                TextField(
+                                    uid="appointment-sel-name-field",
+                                    key="name",
+                                )
+                            ],
                         ),
-                    ),
-                    TableColumn(
-                        uid="appointment-sel-col-location",
-                        label="Location",
-                        key="location",
-                        component=TextField(
-                            uid="appointment-sel-location-field",
+                        TableColumn(
+                            uid="appointment-sel-col-location",
+                            label="Location",
                             key="location",
+                            children=[
+                                TextField(
+                                    uid="appointment-sel-location-field",
+                                    key="location",
+                                )
+                            ],
                         ),
-                    ),
-                    TableColumn(
-                        uid="appointment-sel-col-phone",
-                        label="Phone",
-                        key="phone",
-                        component=TextField(
-                            uid="appointment-sel-phone-field",
+                        TableColumn(
+                            uid="appointment-sel-col-phone",
+                            label="Phone",
                             key="phone",
+                            children=[
+                                TextField(
+                                    uid="appointment-sel-phone-field",
+                                    key="phone",
+                                )
+                            ],
                         ),
-                    ),
-                    TableColumn(
-                        uid="appointment-sel-col-datetime",
-                        label="Date & Time",
-                        key="datetime",
-                        component=DateTimeField(
-                            uid="appointment-sel-datetime-field",
+                        TableColumn(
+                            uid="appointment-sel-col-datetime",
+                            label="Date & Time",
                             key="datetime",
+                            children=[
+                                DateTimeField(
+                                    uid="appointment-sel-datetime-field",
+                                    key="datetime",
+                                )
+                            ],
                         ),
-                    ),
-                    TableColumn(
-                        uid="appointment-sel-col-created-at",
-                        label="Created At",
-                        key="created_at",
-                        component=DateTimeField(
-                            uid="appointment-sel-created-at-field",
+                        TableColumn(
+                            uid="appointment-sel-col-created-at",
+                            label="Created At",
                             key="created_at",
+                            children=[
+                                DateTimeField(
+                                    uid="appointment-sel-created-at-field",
+                                    key="created_at",
+                                )
+                            ],
                         ),
-                    ),
-                ],
-            ),
-        ],
+                    ],
+                ),
+            ],
         )
 
 
@@ -561,7 +621,7 @@ class AppointmentCardTimelineFilter(Component):
     def build(self):
         return Form(
             uid="appointment-card-timeline-filter",
-            action=reverse_lazy("appointments:cards"),
+            url=reverse_lazy("appointments:cards"),
             target="#appointment-card-timeline",
             method="get",
             swap="outerHTML",
@@ -594,51 +654,57 @@ class AppointmentCardTimeline(Component):
                     filter_component=UIRegistry.get(
                         "appointments.AppointmentCardTimelineFilter"
                     )().build(),
-                row_url=lambda o: o.get_absolute_url(),
-                classes="max-h-[80vh]",
-                fields=Column(
-                    uid="appointment-card-fields",
-                    classes="gap-1",
+                    url=lambda o: o.get_absolute_url(),
+                    classes="max-h-[80vh]",
                     children=[
-                        TitleField(
-                            uid="appointment-card-name",
-                            key="name",
-                        ),
-                        SubtitleField(
-                            uid="appointment-card-location",
-                            key="location",
-                        ),
-                        Row(
-                            uid="appointment-card-times",
-                            classes="gap-4 text-sm text-base-content/70",
+                        Column(
+                            uid="appointment-card-fields",
+                            classes="gap-1",
                             children=[
+                                TitleField(
+                                    uid="appointment-card-name",
+                                    key="name",
+                                ),
+                                SubtitleField(
+                                    uid="appointment-card-location",
+                                    key="location",
+                                ),
+                                Row(
+                                    uid="appointment-card-times",
+                                    classes="gap-4 text-sm text-base-content/70",
+                                    children=[
+                                        InlineLabel(
+                                            uid="appointment-card-datetime-label",
+                                            title="Date & Time",
+                                            children=[
+                                                DateTimeField(
+                                                    uid="appointment-card-datetime-field",
+                                                    key="datetime",
+                                                )
+                                            ],
+                                        ),
+                                    ],
+                                ),
                                 InlineLabel(
-                                    uid="appointment-card-datetime-label",
-                                    title="Date & Time",
-                                    component=DateTimeField(
-                                        uid="appointment-card-datetime-field",
-                                        key="datetime",
-                                    ),
+                                    uid="appointment-card-phone-label",
+                                    title="Phone",
+                                    children=[
+                                        TextField(
+                                            uid="appointment-card-phone-field",
+                                            key="phone",
+                                        )
+                                    ],
+                                ),
+                                TextField(
+                                    uid="appointment-card-remarks",
+                                    key="remarks",
+                                    classes="text-sm text-base-content/60 mt-2",
                                 ),
                             ],
-                        ),
-                        InlineLabel(
-                            uid="appointment-card-phone-label",
-                            title="Phone",
-                            component=TextField(
-                                uid="appointment-card-phone-field",
-                                key="phone",
-                            ),
-                        ),
-                        TextField(
-                            uid="appointment-card-remarks",
-                            key="remarks",
-                            classes="text-sm text-base-content/60 mt-2",
-                        ),
+                        )
                     ],
                 ),
-            ),
-        ],
+            ],
         )
 
 
@@ -658,7 +724,9 @@ class AppointmentTimeline(Component):
                     type="rangeBar",
                     title="Appointments Timeline",
                     subtitle="Schedule of all appointments over time",
-                    filter_component=UIRegistry.get("appointments.AppointmentFilter")().build(),
+                    filter_component=UIRegistry.get(
+                        "appointments.AppointmentFilter"
+                    )().build(),
                     options={
                         "chart": {
                             "zoom": {
@@ -680,6 +748,6 @@ class AppointmentTimeline(Component):
                         "xaxis": {"type": "datetime"},
                         "tooltip": {"x": {"format": "dd MMM yyyy HH:mm"}},
                     },
-            )
-        ],
+                )
+            ],
         )
