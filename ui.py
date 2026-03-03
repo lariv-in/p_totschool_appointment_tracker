@@ -141,7 +141,7 @@ class AppointmentFilter(Component):
                     model=User,
                     label="Created By",
                     url=reverse_lazy("users:multi_select"),
-                    role=["totschool_admin"],
+                    roles=["totschool_admin"],
                     display_attr="name",
                     placeholder="Select users...",
                 ),
@@ -218,7 +218,7 @@ class AppointmentFormFields(Component):
                     label="Created By",
                     url=reverse_lazy("users:select"),
                     display_attr="name",
-                    role=["totschool_admin"],
+                    roles=["totschool_admin"],
                     placeholder="Select a user...",
                     required=True,
                 ),
@@ -354,12 +354,12 @@ class AppointmentTable(Component):
                             uid="appointment-col-created-by",
                             label="Created By",
                             key="created_by",
-                            role=["totschool_admin"],
+                            roles=["totschool_admin"],
                             children=[
                                 TextField(
                                     uid="appointment-col-created-by-field",
                                     key="created_by",
-                                    role=["totschool_admin"],
+                                    roles=["totschool_admin"],
                                 )
                             ],
                         ),
@@ -416,7 +416,9 @@ class AppointmentDetail(Component):
                                                     key="overlapping_appointments",
                                                     children=[
                                                         Column(
-                                                            url=lambda o: o.get_absolute_url(),
+                                                            url=lambda o: (
+                                                                o.get_absolute_url()
+                                                            ),
                                                             classes="text-sm link link-primary bg-black/5 border border-black/10 p-1 px-2 rounded-md transition-colors w-fit",
                                                             children=[
                                                                 TextField(
@@ -467,11 +469,11 @@ class AppointmentDetail(Component):
                                 InlineLabel(
                                     uid="appointment-detail-created-by-label",
                                     title="Created By",
-                                    role=["totschool_admin"],
+                                    roles=["totschool_admin"],
                                     children=[
                                         TextField(
                                             uid="appointment-detail-created-by-field",
-                                            role=["totschool_admin"],
+                                            roles=["totschool_admin"],
                                             key="created_by",
                                         )
                                     ],
@@ -489,11 +491,11 @@ class AppointmentDetail(Component):
                                 InlineLabel(
                                     uid="appointment-detail-created-at-label",
                                     title="Created At",
-                                    role=["totschool_admin"],
+                                    roles=["totschool_admin"],
                                     children=[
                                         DateTimeField(
                                             uid="appointment-detail-created-at-field",
-                                            role=["totschool_admin"],
+                                            roles=["totschool_admin"],
                                             key="created_at",
                                         )
                                     ],
@@ -521,9 +523,7 @@ class AppointmentDeleteForm(Component):
                     key="appointment",
                     title="Confirm Deletion",
                     message="Are you sure you want to delete this appointment?",
-                    url=lambda obj: reverse(
-                        "appointments:detail", args=[obj.pk]
-                    ),
+                    url=lambda obj: reverse("appointments:detail", args=[obj.pk]),
                 ),
             ],
         )
